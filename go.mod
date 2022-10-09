@@ -1,4 +1,4 @@
-module wblitz-watcher
+module github.com/opoccomaxao/wblitz-watcher
 
 go 1.19
 

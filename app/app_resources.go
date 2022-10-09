@@ -1,10 +1,10 @@
 package app
 
 import (
-	"wblitz-watcher/repo"
-	"wblitz-watcher/sender"
-	"wblitz-watcher/wg/api"
-	"wblitz-watcher/wg/client"
+	"github.com/opoccomaxao/wblitz-watcher/repo"
+	"github.com/opoccomaxao/wblitz-watcher/sender"
+	"github.com/opoccomaxao/wblitz-watcher/wg/api"
+	"github.com/opoccomaxao/wblitz-watcher/wg/client"
 
 	"github.com/caarlos0/env/v6"
 	"github.com/joho/godotenv"

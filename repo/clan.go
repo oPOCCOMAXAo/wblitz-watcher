@@ -1,6 +1,8 @@
 package repo
 
-import "wblitz-watcher/wg/types"
+import (
+	"github.com/opoccomaxao/wblitz-watcher/wg/types"
+)
 
 type ClanID struct {
 	ID     int    `bson:"id"`

@@ -4,9 +4,10 @@ import (
 	"context"
 	"os/signal"
 	"syscall"
-	"wblitz-watcher/repo"
-	"wblitz-watcher/sender"
-	"wblitz-watcher/wg/client"
+
+	"github.com/opoccomaxao/wblitz-watcher/repo"
+	"github.com/opoccomaxao/wblitz-watcher/sender"
+	"github.com/opoccomaxao/wblitz-watcher/wg/client"
 
 	"github.com/opoccomaxao-go/task-server/task"
 )

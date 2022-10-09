@@ -3,7 +3,8 @@ package app
 import (
 	"context"
 	"log"
-	"wblitz-watcher/wg/types"
+
+	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 )
 
 func (app *App) TestEvent() {

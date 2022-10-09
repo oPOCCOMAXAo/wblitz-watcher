@@ -3,8 +3,9 @@ package app
 import (
 	"context"
 	"log"
-	"wblitz-watcher/app/diff"
-	"wblitz-watcher/wg/types"
+
+	"github.com/opoccomaxao/wblitz-watcher/app/diff"
+	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 
 	"github.com/pkg/errors"
 )

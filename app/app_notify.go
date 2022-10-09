@@ -4,10 +4,11 @@ import (
 	"context"
 	"log"
 	"time"
-	"wblitz-watcher/app/diff"
-	"wblitz-watcher/sender"
-	"wblitz-watcher/sender/discord"
-	"wblitz-watcher/wg/types"
+
+	"github.com/opoccomaxao/wblitz-watcher/app/diff"
+	"github.com/opoccomaxao/wblitz-watcher/sender"
+	"github.com/opoccomaxao/wblitz-watcher/sender/discord"
+	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 
 	"github.com/opoccomaxao-go/generic-collection/set"
 )

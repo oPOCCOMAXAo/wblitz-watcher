@@ -1,7 +1,7 @@
 package app
 
 import (
-	"wblitz-watcher/app/diff"
+	"github.com/opoccomaxao/wblitz-watcher/app/diff"
 )
 
 const (

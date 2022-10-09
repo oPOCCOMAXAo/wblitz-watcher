@@ -2,7 +2,8 @@ package main
 
 import (
 	"log"
-	"wblitz-watcher/app"
+
+	"github.com/opoccomaxao/wblitz-watcher/app"
 )
 
 func main() {

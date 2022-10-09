@@ -3,7 +3,7 @@ package repo
 import (
 	"context"
 
-	"wblitz-watcher/wg/types"
+	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 
 	"github.com/opoccomaxao-go/generic-collection/slice"
 	"github.com/pkg/errors"

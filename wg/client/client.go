@@ -2,7 +2,8 @@ package client
 
 import (
 	"time"
-	"wblitz-watcher/wg/api"
+
+	"github.com/opoccomaxao/wblitz-watcher/wg/api"
 )
 
 type Client struct {

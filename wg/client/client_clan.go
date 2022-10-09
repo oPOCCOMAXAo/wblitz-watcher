@@ -4,8 +4,9 @@ import (
 	"context"
 	"net/url"
 	"strconv"
-	"wblitz-watcher/wg/api"
-	"wblitz-watcher/wg/types"
+
+	"github.com/opoccomaxao/wblitz-watcher/wg/api"
+	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 
 	"github.com/opoccomaxao-go/generic-collection/slice"
 )
