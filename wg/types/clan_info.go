@@ -1,5 +1,9 @@
 package types
 
+import (
+	"fmt"
+)
+
 type ClanInfo struct {
 	MembersCount int    `json:"members_count"`
 	Name         string `json:"name"`
@@ -9,4 +13,8 @@ type ClanInfo struct {
 	MembersIDs   []int  `json:"members_ids"`
 	Tag          string `json:"tag"`
 	Region       string `json:"-"`
+}
+
+func (c *ClanInfo) StatName() string {
+	return fmt.Sprintf("[**%s**] %s", c.Tag, c.Name)
 }

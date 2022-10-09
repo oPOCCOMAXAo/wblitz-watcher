@@ -16,7 +16,7 @@ type Config struct {
 	Clans         []int         `env:"CLANS" envSeparator:","`
 	DB            repo.Config   `envPrefix:"DB_"`
 	Sender        sender.Config `envPrefix:"SENDER_"`
-	DiscordURL    string        `json:"DISCORD_URL,required"`
+	DiscordURL    string        `env:"DISCORD_URL,required"`
 	Region        api.Region
 }
 

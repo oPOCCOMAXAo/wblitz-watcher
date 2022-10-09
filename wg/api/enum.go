@@ -48,5 +48,6 @@ func (r Region) Name() string {
 type Method string
 
 const (
-	MethodClansInfo Method = "clans/info"
+	MethodClansInfo  Method = "clans/info"
+	MethodAccoutInfo Method = "account/info"
 )

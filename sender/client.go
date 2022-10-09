@@ -3,14 +3,17 @@ package sender
 import (
 	"context"
 	"encoding/json"
+	"log"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/valyala/fasthttp"
 )
 
 type Client struct {
-	client *fasthttp.Client
-	config Config
+	client        *fasthttp.Client
+	retryInterval time.Duration
+	config        Config
 }
 
 type Config struct {
@@ -22,7 +25,8 @@ func New(config Config) *Client {
 		client: &fasthttp.Client{
 			NoDefaultUserAgentHeader: true,
 		},
-		config: config,
+		retryInterval: 15 * time.Second,
+		config:        config,
 	}
 }
 
@@ -59,4 +63,16 @@ func (c *Client) Request(ctx context.Context, request *Request) error {
 	}
 
 	return nil
+}
+
+func (c *Client) RequestUntilSuccess(ctx context.Context, request *Request) {
+	for {
+		err := c.Request(ctx, request)
+		if err == nil {
+			return
+		}
+
+		log.Printf("%+v\n", err)
+		time.Sleep(c.retryInterval)
+	}
 }

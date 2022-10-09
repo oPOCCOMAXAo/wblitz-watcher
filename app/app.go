@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"os"
 	"os/signal"
 	"syscall"
 	"wblitz-watcher/repo"
@@ -25,8 +24,8 @@ func New() *App {
 }
 
 func (app *App) Serve() error {
-	closeSignal := make(chan os.Signal, 10)
-	signal.Notify(closeSignal, syscall.SIGINT, syscall.SIGTERM)
+	ctx, cancelFn := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	defer cancelFn()
 
 	err := app.initConfig()
 	if err != nil {
@@ -48,12 +47,9 @@ func (app *App) Serve() error {
 		return err
 	}
 
-	err = app.ProcessClans(context.Background())
-	if err != nil {
-		return err
-	}
+	go app.TaskClans(ctx)
 
-	// <-closeSignal
+	<-ctx.Done()
 
 	return app.Close()
 }
