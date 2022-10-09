@@ -1,6 +1,6 @@
 module github.com/opoccomaxao/wblitz-watcher
 
-go 1.19
+go 1.18
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
