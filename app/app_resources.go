@@ -21,12 +21,9 @@ type Config struct {
 }
 
 func (app *App) initConfig() error {
-	err := godotenv.Load(".env")
-	if err != nil {
-		return errors.WithStack(err)
-	}
+	_ = godotenv.Load(".env")
 
-	err = env.Parse(&app.config)
+	err := env.Parse(&app.config)
 	if err != nil {
 		return errors.WithStack(err)
 	}
