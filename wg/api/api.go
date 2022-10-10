@@ -3,17 +3,17 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/valyala/fasthttp"
 	"golang.org/x/time/rate"
 )
 
 type API struct {
-	client  *fasthttp.Client
+	client  *http.Client
 	limiter *rate.Limiter
 	config  Config
 }
@@ -33,10 +33,8 @@ func New(config Config) (*API, error) {
 	}
 
 	return &API{
-		client: &fasthttp.Client{
-			NoDefaultUserAgentHeader: true,
-			ReadTimeout:              config.Timeout,
-			WriteTimeout:             config.Timeout,
+		client: &http.Client{
+			Timeout: config.Timeout,
 		},
 		limiter: rate.NewLimiter(rate.Limit(20), 10),
 		config:  config,
@@ -69,34 +67,30 @@ func (a *API) Request(
 	request *Request,
 	resPtr interface{},
 ) error {
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	res := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(res)
-
 	err := a.limiter.Wait(ctx)
 	if err != nil {
 		return err
 	}
 
-	req.SetRequestURI(a.makeURL(request))
-
-	err = a.client.Do(req, res)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, a.makeURL(request), http.NoBody)
 	if err != nil {
 		return err
 	}
 
-	code := res.StatusCode()
-	if code != fasthttp.StatusOK {
-		return errors.Errorf("status: %d", code)
+	res, err := a.client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if res.StatusCode != http.StatusOK {
+		return errors.Errorf("status: %d", res.StatusCode)
 	}
 
 	resObject := Response{
 		Data: resPtr,
 	}
 
-	err = json.Unmarshal(res.Body(), &resObject)
+	err = json.NewDecoder(res.Body).Decode(&resObject)
 	if err != nil {
 		return err
 	}
