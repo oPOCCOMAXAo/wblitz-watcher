@@ -2,6 +2,9 @@ package app
 
 import (
 	"context"
+	"log"
+	"net/http"
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -17,6 +20,7 @@ type App struct {
 	client  *client.Client
 	repo    *repo.Repo
 	sender  *sender.Client
+	server  *http.Server
 	config  Config
 }
 
@@ -25,7 +29,12 @@ func New() *App {
 }
 
 func (app *App) Serve() error {
-	ctx, cancelFn := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+	termSignals := []os.Signal{syscall.SIGINT, syscall.SIGTERM}
+
+	sigs := make(chan os.Signal, 10)
+	signal.Notify(sigs, termSignals...)
+
+	ctx, cancelFn := signal.NotifyContext(context.Background(), termSignals...)
 	defer cancelFn()
 
 	err := app.initConfig()
@@ -48,9 +57,16 @@ func (app *App) Serve() error {
 		return err
 	}
 
+	err = app.initServer()
+	if err != nil {
+		return err
+	}
+
 	go app.TaskClans(ctx)
 
-	<-ctx.Done()
+	sig := <-sigs
+	log.Printf("Received signal: %s\n", sig.String())
+	cancelFn()
 
 	return app.Close()
 }

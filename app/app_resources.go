@@ -1,6 +1,10 @@
 package app
 
 import (
+	"log"
+	"net/http"
+	"strconv"
+
 	"github.com/opoccomaxao/wblitz-watcher/repo"
 	"github.com/opoccomaxao/wblitz-watcher/sender"
 	"github.com/opoccomaxao/wblitz-watcher/utils"
@@ -34,6 +38,7 @@ type Config struct {
 	DB            repo.Config   `envPrefix:"DB_"`
 	Sender        sender.Config `envPrefix:"SENDER_"`
 	DiscordURL    string        `env:"DISCORD_URL,required"`
+	Port          int           `env:"PORT" envDefault:"8080"`
 }
 
 func (app *App) initConfig() error {
@@ -77,6 +82,27 @@ func (app *App) initSender() error {
 	return nil
 }
 
+func (app *App) initServer() error {
+	app.server = &http.Server{
+		Addr:    ":" + strconv.Itoa(app.config.Port),
+		Handler: app,
+	}
+
+	go func() {
+		err := app.server.ListenAndServe()
+		if err != nil {
+			log.Printf("%+v\n", err)
+		}
+	}()
+
+	return nil
+}
+
 func (app *App) Close() error {
+	err := app.server.Close()
+	if err != nil {
+		log.Printf("%+v\n", err)
+	}
+
 	return nil
 }
