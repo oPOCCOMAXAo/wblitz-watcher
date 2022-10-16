@@ -4,13 +4,15 @@ import (
 	"context"
 	"log"
 
+	"github.com/opoccomaxao/wblitz-watcher/wg/api"
 	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 )
 
 func (app *App) TestEvent() {
 	testClan := types.ClanInfo{
-		Name: "Test",
-		Tag:  "TEST",
+		Name:   "Test",
+		Tag:    "TEST",
+		Region: api.RegionEU,
 	}
 
 	testPlayer := types.AccountInfo{

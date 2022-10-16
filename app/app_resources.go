@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/opoccomaxao/wblitz-watcher/repo"
 	"github.com/opoccomaxao/wblitz-watcher/sender"
+	"github.com/opoccomaxao/wblitz-watcher/utils"
 	"github.com/opoccomaxao/wblitz-watcher/wg/api"
 	"github.com/opoccomaxao/wblitz-watcher/wg/client"
 
@@ -11,13 +12,28 @@ import (
 	"github.com/pkg/errors"
 )
 
+type ClansConfig struct {
+	EU   []int `env:"EU" envSeparator:","`
+	RU   []int `env:"RU" envSeparator:","`
+	NA   []int `env:"NA" envSeparator:","`
+	Asia []int `env:"ASIA" envSeparator:","`
+}
+
+func (c *ClansConfig) GetRegion(region api.Region) []int {
+	return utils.GetFromMap(map[api.Region][]int{
+		api.RegionAsia: c.Asia,
+		api.RegionEU:   c.EU,
+		api.RegionNA:   c.NA,
+		api.RegionRU:   c.RU,
+	}, region, api.RegionUnknown)
+}
+
 type Config struct {
 	ApplicationID string        `env:"APP_ID,required"`
-	Clans         []int         `env:"CLANS" envSeparator:","`
+	Clans         ClansConfig   `envPrefix:"CLANS_"`
 	DB            repo.Config   `envPrefix:"DB_"`
 	Sender        sender.Config `envPrefix:"SENDER_"`
 	DiscordURL    string        `env:"DISCORD_URL,required"`
-	Region        api.Region
 }
 
 func (app *App) initConfig() error {
@@ -27,8 +43,6 @@ func (app *App) initConfig() error {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-
-	app.config.Region = api.RegionEU
 
 	return nil
 }

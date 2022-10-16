@@ -43,10 +43,18 @@ func (p *AccountInfo) AuthorName() string {
 }
 
 func (p *AccountInfo) StatWins() string {
+	if p.Statistics.All.Battles == 0 {
+		return "0%"
+	}
+
 	return fmt.Sprintf("%.2f%%", float64(p.Statistics.All.Wins)/float64(p.Statistics.All.Battles)*100)
 }
 
 func (p *AccountInfo) StatDamage() string {
+	if p.Statistics.All.Battles == 0 {
+		return "0"
+	}
+
 	return fmt.Sprintf("%d", p.Statistics.All.DamageDealt/p.Statistics.All.Battles)
 }
 

@@ -30,7 +30,7 @@ func (app *App) NotifyClanDiff(
 		}
 	}
 
-	players, err := app.client.AccountInfo(ctx, app.config.Region, playerIDs.Slice()...)
+	players, err := app.client.AccountInfo(ctx, clanInfo.Region, playerIDs.Slice()...)
 	if err != nil {
 		return err
 	}

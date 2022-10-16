@@ -5,20 +5,33 @@ import (
 	"log"
 
 	"github.com/opoccomaxao/wblitz-watcher/app/diff"
+	"github.com/opoccomaxao/wblitz-watcher/wg/api"
 	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 
 	"github.com/pkg/errors"
 )
 
 func (app *App) ProcessClans(ctx context.Context) error {
-	clansAPI, err := app.client.ClansInfo(ctx, app.config.Region, app.config.Clans...)
+	_ = app.ProcessClansRegion(ctx, api.RegionRU)
+	_ = app.ProcessClansRegion(ctx, api.RegionEU)
+	_ = app.ProcessClansRegion(ctx, api.RegionNA)
+	_ = app.ProcessClansRegion(ctx, api.RegionAsia)
+
+	return nil
+}
+
+func (app *App) ProcessClansRegion(ctx context.Context, region api.Region) error {
+	ids := app.config.Clans.GetRegion(region)
+	if len(ids) == 0 {
+		return nil
+	}
+
+	clansAPI, err := app.client.ClansInfo(ctx, region, ids...)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	regionName := app.config.Region.Name()
-
-	clansDB, err := app.repo.GetClans(ctx, regionName, app.config.Clans)
+	clansDB, err := app.repo.GetClans(ctx, region.Name(), ids)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -28,7 +41,7 @@ func (app *App) ProcessClans(ctx context.Context) error {
 		clansDBMap[clan.ClanID] = clan
 	}
 
-	for _, id := range app.config.Clans {
+	for _, id := range ids {
 		newClan := clansAPI[types.MaybeInt(id)]
 		diff := DiffClan(clansDBMap[id], newClan)
 
@@ -37,8 +50,6 @@ func (app *App) ProcessClans(ctx context.Context) error {
 			if err != nil {
 				return errors.WithStack(err)
 			}
-
-			newClan.Region = regionName
 
 			err = app.repo.SaveClan(ctx, newClan)
 			if err != nil {

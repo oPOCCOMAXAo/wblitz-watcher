@@ -32,5 +32,9 @@ func (c *Client) ClansInfo(
 		}
 	}
 
+	for _, clan := range res {
+		clan.Region = region
+	}
+
 	return res, nil
 }

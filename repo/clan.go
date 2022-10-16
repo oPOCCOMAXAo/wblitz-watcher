@@ -1,6 +1,7 @@
 package repo
 
 import (
+	"github.com/opoccomaxao/wblitz-watcher/wg/api"
 	"github.com/opoccomaxao/wblitz-watcher/wg/types"
 )
 
@@ -21,7 +22,7 @@ func (Clan) FromType(clan *types.ClanInfo) *Clan {
 	return &Clan{
 		ID: ClanID{
 			ID:     clan.ClanID,
-			Region: clan.Region,
+			Region: clan.Region.Name(),
 		},
 		Name:     clan.Name,
 		Tag:      clan.Tag,
@@ -38,6 +39,6 @@ func (Clan) ToType(clan *Clan) *types.ClanInfo {
 		MembersCount: len(clan.Members),
 		MembersIDs:   clan.Members,
 		LeaderID:     clan.LeaderID,
-		Region:       clan.ID.Region,
+		Region:       api.RegionFromName(clan.ID.Region),
 	}
 }
