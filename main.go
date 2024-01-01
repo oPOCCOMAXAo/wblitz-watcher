@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 
-	"github.com/opoccomaxao/wblitz-watcher/app"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/app/run"
 )
 
 func main() {
-	err := app.New().Serve()
+	err := run.Run()
 	if err != nil {
-		log.Fatalf("%+v", err)
+		log.Fatalf("%+v\n", err)
 	}
 }

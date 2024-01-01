@@ -17,27 +17,128 @@ linters-settings:
     ignore-names:
       - ok
       - err
-      - tC
+      - id
+      - db
+      - i
+      - tx # transaction
+      - tC # test case
+  gofumpt:
+    module-path: github.com/opoccomaxao/wblitz-watcher
+    extra-rules: true
+  gci:
+    custom-order: false
+    sections:
+      - standard
+      - default
+      - prefix(github.com/opoccomaxao/wblitz-watcher)
+  godot:
+    exclude:
+      - "^@*"
+  errcheck:
+    exclude-functions:
+      - (*github.com/gin-gonic/gin.Error).SetType
+      - (*github.com/gin-gonic/gin.Context).AbortWithError
 
 linters:
-  enable-all: true
-  disable:
-    - ireturn
-    - ifshort
-    - exhaustivestruct
-    - testpackage
+  disable-all: true
+  enable:
+    # default
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+
+    # nondefault
+    - asasalint
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - containedctx
+    - contextcheck
+    - cyclop
+    - deadcode
+    - decorder
+    - dogsled
+    - durationcheck
     - errchkjson
-    - gomnd
+    - errname
+    - errorlint
+    - execinquery
+    - exportloopref
+    - forbidigo
+    - forcetypeassert
+    - funlen
     - gci
+    - ginkgolinter
+    - gocheckcompilerdirectives
+    - gochecknoglobals
+    - gochecknoinits
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+    - godot
+    - godox
+    - goerr113
+    - gofmt
     - gofumpt
-    - paralleltest
-    - tagliatelle
-  fast: true
+    - goheader
+    # - gomnd
+    - gomoddirectives
+    - gomodguard
+    - goprintffuncname
+    - gosec
+    - grouper
+    - importas
+    - interfacebloat
+    - lll
+    - loggercheck
+    - maintidx
+    - makezero
+    - mirror
+    - misspell
+    - musttag
+    - nakedret
+    - nestif
+    - nilerr
+    - nilnil
+    - nlreturn
+    - noctx
+    - nolintlint
+    - nonamedreturns
+    - nosprintfhostport
+    - prealloc
+    - predeclared
+    - promlinter
+    - reassign
+    - revive
+    - rowserrcheck
+    - sqlclosecheck
+    - stylecheck
+    - tagalign
+    - tenv
+    - testableexamples
+    - thelper
+    - unconvert
+    - unparam
+    - usestdlibvars
+    - varnamelen
+    - wastedassign
+    - whitespace
+    - wrapcheck
+    - wsl
+    - zerologlint
+  fast: false
 
 issues:
+  fix: true
+  new: false
   exclude-rules:
-    # Exclude some linters from running on tests files.
-    - path: _test\.go
+    - path: (.+)_test.go
       linters:
         - funlen
-  fix: true
+    - source: "^//"
+      linters:
+        - lll
