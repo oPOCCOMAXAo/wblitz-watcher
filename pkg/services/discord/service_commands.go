@@ -2,8 +2,6 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
-
-	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 )
 
 func (s *Service) MakeCommands() map[string]*InteractionDescription {
@@ -20,37 +18,50 @@ func (s *Service) MakeCommands() map[string]*InteractionDescription {
 				Name:        "userstats",
 				Description: "Get user stats",
 				Options: []*discordgo.ApplicationCommandOption{
-					{
-						Type:        discordgo.ApplicationCommandOptionString,
-						Name:        "username",
-						Description: "WotBlitz username",
-						Required:    true,
-					},
-					{
-						Type:        discordgo.ApplicationCommandOptionString,
-						Name:        "server",
-						Description: "WotBlitz server",
-						Required:    true,
-						Choices: []*discordgo.ApplicationCommandOptionChoice{
-							{
-								Name:  "EU",
-								Value: wg.RegionEU.Name(),
-							},
-							{
-								Name:  "NA",
-								Value: wg.RegionNA.Name(),
-							},
-							{
-								Name:  "ASIA",
-								Value: wg.RegionAsia.Name(),
-							},
-							{
-								Name:  "RU - unsupported now",
-								Value: wg.RegionRU.Name(),
-							},
-						},
-					},
+					s.getUsernameOption(),
+					s.getWotbServerOption(),
 				},
+			},
+		},
+		"channelbind": {
+			Command: &discordgo.ApplicationCommand{
+				Name:        "channelbind",
+				Description: "Bind channel for notifications",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Type:        discordgo.ApplicationCommandOptionChannel,
+						Name:        "channel",
+						Description: "Channel for notifications",
+						Required:    true,
+					},
+					s.getNotificationTypeOption(),
+				},
+			},
+		},
+		"clanadd": {
+			Command: &discordgo.ApplicationCommand{
+				Name:        "clanadd",
+				Description: "Add clan for notifications",
+				Options: []*discordgo.ApplicationCommandOption{
+					s.getClanOption(),
+					s.getWotbServerOption(),
+				},
+			},
+		},
+		"clanremove": {
+			Command: &discordgo.ApplicationCommand{
+				Name:        "clanremove",
+				Description: "Remove clan from notifications",
+				Options: []*discordgo.ApplicationCommandOption{
+					s.getClanOption(),
+					s.getWotbServerOption(),
+				},
+			},
+		},
+		"clanlist": {
+			Command: &discordgo.ApplicationCommand{
+				Name:        "clanlist",
+				Description: "List of clans for notifications",
 			},
 		},
 	}

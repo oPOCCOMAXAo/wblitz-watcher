@@ -3,10 +3,12 @@ package wg
 import (
 	"context"
 	"net/url"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 type AccountListRequest struct {
-	Region Region
+	Region models.Region
 	Search string
 }
 

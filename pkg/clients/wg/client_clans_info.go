@@ -6,11 +6,12 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/jsonutils"
 )
 
 type ClansInfoRequest struct {
-	Region Region
+	Region models.Region
 	IDs    []int64
 }
 

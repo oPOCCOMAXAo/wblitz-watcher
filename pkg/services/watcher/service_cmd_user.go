@@ -2,10 +2,13 @@ package watcher
 
 import (
 	"context"
+	"log"
+	"strings"
 
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
+	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/jsonutils"
 )
 
@@ -14,13 +17,13 @@ func (s *Service) cmdUserStats(
 ) (*discordgo.InteractionResponse, error) {
 	var req wg.AccountListRequest
 
-	for _, option := range event.ApplicationCommandData().Options {
-		switch option.Name {
-		case "username":
-			req.Search = option.StringValue()
-		case "server":
-			req.Region = wg.RegionFromName(option.StringValue())
-		}
+	err := du.ParseOptions(event.ApplicationCommandData().Options, du.DecodersMap{
+		"username": du.DecoderString(&req.Search),
+		"server":   du.DecoderString(&req.Region),
+	})
+	if err != nil {
+		//nolint:wrapcheck
+		return nil, err
 	}
 
 	user, err := s.getUserStatsByNick(req)
@@ -73,6 +76,8 @@ func (s *Service) cmdUserStats(
 func (s *Service) getUserStatsByNick(
 	req wg.AccountListRequest,
 ) (*wg.AccountInfo, error) {
+	log.Printf("userstats %s [%s]\n", req.Search, req.Region.Pretty())
+
 	ctx := context.Background()
 
 	list, err := s.wg.AccountList(ctx, req)
@@ -87,8 +92,10 @@ func (s *Service) getUserStatsByNick(
 
 	var id int64
 
+	req.Search = strings.ToLower(req.Search)
+
 	for _, ale := range list {
-		if ale.Nickname == req.Search {
+		if strings.ToLower(ale.Nickname) == req.Search {
 			id = ale.AccountID
 
 			break
@@ -99,7 +106,7 @@ func (s *Service) getUserStatsByNick(
 		return nil, nil
 	}
 
-	info, err := s.wg.AccountInfo(context.Background(), wg.AccountInfoRequest{
+	info, err := s.wg.AccountInfo(ctx, wg.AccountInfoRequest{
 		Region: req.Region,
 		IDs:    []int64{id},
 	})

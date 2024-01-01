@@ -10,6 +10,8 @@ import (
 
 	"github.com/pkg/errors"
 	"golang.org/x/time/rate"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 type Client struct {
@@ -34,7 +36,22 @@ func New(config Config) *Client {
 	return &res
 }
 
-func (c *Client) makeURL(request *Request) string {
+func (c *Client) getHost(region models.Region) string {
+	switch region {
+	case models.RegionAsia:
+		return "api.wotblitz.asia"
+	case models.RegionEU:
+		return "api.wotblitz.eu"
+	case models.RegionNA:
+		return "api.wotblitz.com"
+	case models.RegionRU:
+		return "api.tanki.su"
+	default:
+		return "api.wotblitz.eu"
+	}
+}
+
+func (c *Client) getFullURL(request *Request) string {
 	if request.Data == nil {
 		request.Data = url.Values{}
 	}
@@ -44,7 +61,7 @@ func (c *Client) makeURL(request *Request) string {
 	builder := strings.Builder{}
 	builder.Grow(256)
 	builder.WriteString("https://")
-	builder.WriteString(request.Region.Host())
+	builder.WriteString(c.getHost(request.Region))
 	builder.WriteString("/")
 	builder.WriteString(string(request.App))
 	builder.WriteString("/")
@@ -65,7 +82,7 @@ func (c *Client) Request(
 		return errors.WithStack(err)
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.makeURL(request), http.NoBody)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.getFullURL(request), http.NoBody)
 	if err != nil {
 		return errors.WithStack(err)
 	}

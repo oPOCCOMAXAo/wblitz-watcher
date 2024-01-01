@@ -6,11 +6,12 @@ import (
 
 	"github.com/samber/lo"
 
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/jsonutils"
 )
 
 type AccountInfoRequest struct {
-	Region Region
+	Region models.Region
 	IDs    []int64
 }
 
@@ -24,7 +25,7 @@ func (c *Client) AccountInfo(
 		err := c.Request(ctx, &Request{
 			Region: request.Region,
 			App:    AppWotBlitz,
-			Method: MethodAccoutInfo,
+			Method: MethodAccountInfo,
 			Data: url.Values{
 				"account_id": {JoinInt64(ids, ",")},
 			},

@@ -22,6 +22,8 @@ func NewService(
 
 func (s *Service) Serve() error {
 	s.discord.RegisterCommandHandler("userstats", s.cmdUserStats)
+	s.discord.RegisterCommandHandler("channelbind", s.cmdChannelBind)
+	s.discord.RegisterCommandHandler("clanadd", s.cmdClanAdd)
 
 	return nil
 }
