@@ -2,11 +2,15 @@ package discord
 
 import (
 	"github.com/bwmarrin/discordgo"
+	"github.com/pkg/errors"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
 )
 
 type Service struct {
 	config   Config
 	session  *discordgo.Session
+	owner    *discordgo.User
 	commands map[string]*InteractionDescription
 }
 
@@ -43,6 +47,18 @@ func (s *Service) init() error {
 		//nolint:wrapcheck
 		return err
 	}
+
+	application, err := s.session.Application("@me")
+	if err != nil {
+		//nolint:wrapcheck
+		return err
+	}
+
+	if application.Owner == nil {
+		return errors.WithMessage(app.ErrFailed, "owner is nil")
+	}
+
+	s.owner = application.Owner
 
 	s.commands = s.MakeCommands()
 

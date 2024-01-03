@@ -33,6 +33,7 @@ func (s *Service) cmdUserStats(
 			Type: discordgo.InteractionResponseChannelMessageWithSource,
 			Data: &discordgo.InteractionResponseData{
 				Content: "User not found",
+				Flags:   discordgo.MessageFlagsEphemeral,
 			},
 		}, nil
 	}

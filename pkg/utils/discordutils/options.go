@@ -42,3 +42,13 @@ func DecoderString[T ~string](ref *T) OptionDecoder {
 		return nil
 	}
 }
+
+func DecoderChannelID[T ~string](ref *T) OptionDecoder {
+	return func(option *discordgo.ApplicationCommandInteractionDataOption) error {
+		ch := option.ChannelValue(nil)
+
+		*ref = T(ch.ID)
+
+		return nil
+	}
+}

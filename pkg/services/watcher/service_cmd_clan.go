@@ -2,21 +2,43 @@ package watcher
 
 import (
 	"context"
+	"log"
 	"strconv"
 
 	"github.com/bwmarrin/discordgo"
 
+	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 )
 
-//nolint:funlen
+func (s *Service) cmdClan(
+	event *discordgo.InteractionCreate,
+) (*discordgo.InteractionResponse, error) {
+	data := event.ApplicationCommandData()
+
+	log.Printf("%s %s\n", data.Name, data.Options[0].Name)
+
+	switch data.Options[0].Name {
+	case "add":
+		return s.cmdClanAdd(event)
+	}
+
+	return nil, app.ErrNotFound
+}
+
 func (s *Service) cmdClanAdd(
 	event *discordgo.InteractionCreate,
 ) (*discordgo.InteractionResponse, error) {
+	err := s.discord.VerifyAccess(event)
+	if err != nil {
+		//nolint:wrapcheck
+		return nil, err
+	}
+
 	var req wg.ClansListRequest
 
-	err := du.ParseOptions(event.ApplicationCommandData().Options, du.DecodersMap{
+	err = du.ParseOptions(event.ApplicationCommandData().Options[0].Options, du.DecodersMap{
 		"clan":   du.DecoderString(&req.Search),
 		"server": du.DecoderString(&req.Region),
 	})
@@ -30,6 +52,7 @@ func (s *Service) cmdClanAdd(
 	if clan == nil {
 		data := &discordgo.InteractionResponseData{
 			Title: "Clan not found",
+			Flags: discordgo.MessageFlagsEphemeral,
 		}
 
 		if err != nil {
@@ -74,6 +97,7 @@ func (s *Service) cmdClanAdd(
 					},
 				},
 			},
+			Flags: discordgo.MessageFlagsEphemeral,
 		},
 	}, nil
 }

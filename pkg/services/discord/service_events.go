@@ -1,9 +1,12 @@
 package discord
 
 import (
+	"errors"
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
 )
 
 func (s *Service) onReady(
@@ -67,7 +70,14 @@ func (s *Service) onInteractionCreate(
 
 	resp, err := cmd.Handler(event)
 	if err != nil {
-		log.Printf("%+v\n", err)
+		switch {
+		case errors.Is(err, app.ErrNoAccess):
+			resp = s.getNoAccessResponse()
+		case errors.Is(err, app.ErrNotFound):
+			resp = s.getNotFoundResponse()
+		default:
+			log.Printf("%+v\n", err)
+		}
 	}
 
 	if resp == nil {
