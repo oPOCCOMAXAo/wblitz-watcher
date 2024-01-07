@@ -5,8 +5,10 @@ import (
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/domain"
 )
 
+//nolint:varnamelen
 func Provide(
 	i *do.Injector,
 ) {
@@ -23,9 +25,16 @@ func Provide(
 			return nil, err
 		}
 
+		domain, err := domain.Invoke(i)
+		if err != nil {
+			//nolint:wrapcheck
+			return nil, err
+		}
+
 		return NewService(
 			discord,
 			wg,
+			domain,
 		), nil
 	})
 }

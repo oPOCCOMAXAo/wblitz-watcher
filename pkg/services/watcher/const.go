@@ -7,6 +7,7 @@ func ColorRGB(r, g, b byte) Color {
 }
 
 const (
+	ColorError Color = 0xff0000
 	ColorEnter Color = 0xfefffe
 	ColorLeave Color = 0x010000
 	ColorWin   Color = 0x006600

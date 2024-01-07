@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 // HandlePanic should be after HandleErrors as it passes panic as error.
@@ -16,7 +16,7 @@ func HandlePanic() gin.HandlerFunc {
 				return
 			}
 
-			ctx.Error(errors.Wrapf(app.ErrPanic, "%+v", err))
+			ctx.Error(errors.Wrapf(models.ErrPanic, "%+v", err))
 			ctx.Abort()
 		}()
 

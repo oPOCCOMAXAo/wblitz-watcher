@@ -8,13 +8,14 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
 	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/jsonutils"
 )
 
 func (s *Service) cmdUserStats(
 	event *discordgo.InteractionCreate,
-) (*discordgo.InteractionResponse, error) {
+) (*discord.Response, error) {
 	var req wg.AccountListRequest
 
 	err := du.ParseOptions(event.ApplicationCommandData().Options, du.DecodersMap{
@@ -29,12 +30,8 @@ func (s *Service) cmdUserStats(
 	user, err := s.getUserStatsByNick(req)
 
 	if user == nil {
-		return &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Content: "User not found",
-				Flags:   discordgo.MessageFlagsEphemeral,
-			},
+		return &discord.Response{
+			Content: "User not found",
 		}, nil
 	}
 
@@ -42,32 +39,29 @@ func (s *Service) cmdUserStats(
 		return nil, err
 	}
 
-	return &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: event.ApplicationCommandData().Name,
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Fields: []*discordgo.MessageEmbedField{
-						{
-							Name:   "Wins",
-							Value:  user.StatWins(),
-							Inline: true,
-						},
-						{
-							Name:   "Damage",
-							Value:  user.StatDamage(),
-							Inline: true,
-						},
-						{
-							Name:   "Battles",
-							Value:  user.StatBattles(),
-							Inline: true,
-						},
+	return &discord.Response{
+		Content: event.ApplicationCommandData().Name,
+		Embeds: []*discordgo.MessageEmbed{
+			{
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:   "Wins",
+						Value:  user.StatWins(),
+						Inline: true,
 					},
-					Author: &discordgo.MessageEmbedAuthor{
-						Name: user.AuthorName(),
+					{
+						Name:   "Damage",
+						Value:  user.StatDamage(),
+						Inline: true,
 					},
+					{
+						Name:   "Battles",
+						Value:  user.StatBattles(),
+						Inline: true,
+					},
+				},
+				Author: &discordgo.MessageEmbedAuthor{
+					Name: user.AuthorName(),
 				},
 			},
 		},

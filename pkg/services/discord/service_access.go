@@ -3,7 +3,7 @@ package discord
 import (
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 )
 
@@ -11,7 +11,7 @@ func (s *Service) VerifyAccess(
 	event *discordgo.InteractionCreate,
 ) error {
 	if event.Member == nil {
-		return app.ErrNoAccess
+		return models.ErrNoAccess
 	}
 
 	if s.isOwner(event) {
@@ -22,7 +22,7 @@ func (s *Service) VerifyAccess(
 		return nil
 	}
 
-	return app.ErrNoAccess
+	return models.ErrNoAccess
 }
 
 func (s *Service) isOwner(

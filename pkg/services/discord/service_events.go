@@ -6,7 +6,7 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 func (s *Service) onReady(
@@ -68,12 +68,17 @@ func (s *Service) onInteractionCreate(
 		return
 	}
 
+	err := s.responseInProgress(event.Interaction)
+	if err != nil {
+		log.Printf("%+v\n", err)
+	}
+
 	resp, err := cmd.Handler(event)
 	if err != nil {
 		switch {
-		case errors.Is(err, app.ErrNoAccess):
+		case errors.Is(err, models.ErrNoAccess):
 			resp = s.getNoAccessResponse()
-		case errors.Is(err, app.ErrNotFound):
+		case errors.Is(err, models.ErrNotFound):
 			resp = s.getNotFoundResponse()
 		default:
 			log.Printf("%+v\n", err)
@@ -84,9 +89,9 @@ func (s *Service) onInteractionCreate(
 		return
 	}
 
-	err = session.InteractionRespond(
+	_, err = session.InteractionResponseEdit(
 		event.Interaction,
-		resp,
+		resp.WebHookEdit(),
 	)
 	if err != nil {
 		log.Printf("%+v\n", err)

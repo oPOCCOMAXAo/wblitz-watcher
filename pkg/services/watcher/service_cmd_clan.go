@@ -7,14 +7,15 @@ import (
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
 	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 )
 
 func (s *Service) cmdClan(
 	event *discordgo.InteractionCreate,
-) (*discordgo.InteractionResponse, error) {
+) (*discord.Response, error) {
 	data := event.ApplicationCommandData()
 
 	log.Printf("%s %s\n", data.Name, data.Options[0].Name)
@@ -22,14 +23,18 @@ func (s *Service) cmdClan(
 	switch data.Options[0].Name {
 	case "add":
 		return s.cmdClanAdd(event)
+	case "remove":
+		// TODO
+	case "list":
+		// TODO
 	}
 
-	return nil, app.ErrNotFound
+	return nil, models.ErrNotFound
 }
 
 func (s *Service) cmdClanAdd(
 	event *discordgo.InteractionCreate,
-) (*discordgo.InteractionResponse, error) {
+) (*discord.Response, error) {
 	err := s.discord.VerifyAccess(event)
 	if err != nil {
 		//nolint:wrapcheck
@@ -50,20 +55,16 @@ func (s *Service) cmdClanAdd(
 	clan, err := s.wg.FindClanByTag(context.Background(), req)
 
 	if clan == nil {
-		data := &discordgo.InteractionResponseData{
-			Title: "Clan not found",
-			Flags: discordgo.MessageFlagsEphemeral,
+		res := &discord.Response{
+			Content: "Clan not found",
 		}
 
 		if err != nil {
-			data.Content = err.Error()
+			res.Embeds = append(res.Embeds, s.embedError(err))
 		}
 
 		//nolint:wrapcheck
-		return &discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseChannelMessageWithSource,
-			Data: data,
-		}, err
+		return res, err
 	}
 
 	if err != nil {
@@ -71,33 +72,29 @@ func (s *Service) cmdClanAdd(
 		return nil, err
 	}
 
-	return &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Debug",
-			Embeds: []*discordgo.MessageEmbed{
-				{
-					Fields: []*discordgo.MessageEmbedField{
-						{
-							Name:  "Tag",
-							Value: clan.Tag,
-						},
-						{
-							Name:  "Name",
-							Value: clan.Name,
-						},
-						{
-							Name:  "Members",
-							Value: strconv.Itoa(clan.MembersCount),
-						},
-						{
-							Name:  "DS Server",
-							Value: event.GuildID,
-						},
+	return &discord.Response{
+		Content: "Debug",
+		Embeds: []*discordgo.MessageEmbed{
+			{
+				Fields: []*discordgo.MessageEmbedField{
+					{
+						Name:  "Tag",
+						Value: clan.Tag,
+					},
+					{
+						Name:  "Name",
+						Value: clan.Name,
+					},
+					{
+						Name:  "Members",
+						Value: strconv.Itoa(clan.MembersCount),
+					},
+					{
+						Name:  "DS Server",
+						Value: event.GuildID,
 					},
 				},
 			},
-			Flags: discordgo.MessageFlagsEphemeral,
 		},
 	}, nil
 }

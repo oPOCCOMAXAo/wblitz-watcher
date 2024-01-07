@@ -103,32 +103,8 @@ func (s *Service) RegisterCommandHandler(
 
 func (s *Service) cmdPing(
 	_ *discordgo.InteractionCreate,
-) (*discordgo.InteractionResponse, error) {
-	return &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Pong!",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
+) (*Response, error) {
+	return &Response{
+		Content: "Pong!",
 	}, nil
-}
-
-func (s *Service) getNoAccessResponse() *discordgo.InteractionResponse {
-	return &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "You have no access to this command",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	}
-}
-
-func (s *Service) getNotFoundResponse() *discordgo.InteractionResponse {
-	return &discordgo.InteractionResponse{
-		Type: discordgo.InteractionResponseChannelMessageWithSource,
-		Data: &discordgo.InteractionResponseData{
-			Content: "Command not found",
-			Flags:   discordgo.MessageFlagsEphemeral,
-		},
-	}
 }

@@ -4,7 +4,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/pkg/errors"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/app"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 type Service struct {
@@ -55,7 +55,7 @@ func (s *Service) init() error {
 	}
 
 	if application.Owner == nil {
-		return errors.WithMessage(app.ErrFailed, "owner is nil")
+		return errors.WithMessage(models.ErrFailed, "owner is nil")
 	}
 
 	s.owner = application.Owner
