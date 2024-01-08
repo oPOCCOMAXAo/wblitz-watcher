@@ -8,23 +8,18 @@ import (
 	"github.com/bwmarrin/discordgo"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
-	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/jsonutils"
 )
 
 func (s *Service) cmdUserStats(
-	event *discordgo.InteractionCreate,
+	_ *discordgo.InteractionCreate,
+	data *discord.CommandData,
 ) (*discord.Response, error) {
-	var req wg.AccountListRequest
-
-	err := du.ParseOptions(event.ApplicationCommandData().Options, du.DecodersMap{
-		"username": du.DecoderString(&req.Search),
-		"server":   du.DecoderString(&req.Region),
-	})
-	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
+	req := wg.AccountListRequest{
+		Search: data.String("username"),
+		Region: models.Region(data.String("server")),
 	}
 
 	user, err := s.getUserStatsByNick(req)
@@ -40,7 +35,7 @@ func (s *Service) cmdUserStats(
 	}
 
 	return &discord.Response{
-		Content: event.ApplicationCommandData().Name,
+		Content: "User stats",
 		Embeds: []*discordgo.MessageEmbed{
 			{
 				Fields: []*discordgo.MessageEmbedField{

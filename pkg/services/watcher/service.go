@@ -25,9 +25,24 @@ func NewService(
 }
 
 func (s *Service) Serve() error {
-	s.discord.RegisterCommandHandler("userstats", s.cmdUserStats)
-	s.discord.RegisterCommandHandler("channel", s.cmdChannel)
-	s.discord.RegisterCommandHandler("clan", s.cmdClan)
+	s.discord.RegisterCommand(discord.CommandParams{
+		Name:    "userstats",
+		Handler: s.cmdUserStats,
+	})
+
+	s.discord.RegisterCommand(discord.CommandParams{
+		Name:      "channel",
+		SubName:   "bind",
+		Handler:   s.cmdChannelBind,
+		IsPrivate: true,
+	})
+
+	s.discord.RegisterCommand(discord.CommandParams{
+		Name:      "clan",
+		SubName:   "add",
+		Handler:   s.cmdClanAdd,
+		IsPrivate: true,
+	})
 
 	return nil
 }
