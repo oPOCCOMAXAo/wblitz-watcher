@@ -2,67 +2,69 @@ package watcher
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/bwmarrin/discordgo"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/domain"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
 func (s *Service) cmdClanAdd(
 	event *discordgo.InteractionCreate,
 	data *discord.CommandData,
 ) (*discord.Response, error) {
-	req := wg.ClansListRequest{
-		Search: data.String("clan"),
-		Region: models.Region(data.String("server")),
+	request := domain.ClanAddRequest{
+		ServerID: event.GuildID,
+		ClanTag:  data.String("clan"),
+		Region:   models.Region(data.String("server")),
 	}
 
-	clan, err := s.wg.FindClanByTag(context.Background(), req)
+	clan, err := s.domain.ClanAdd(context.TODO(), &request)
 
-	if clan == nil {
-		res := &discord.Response{
-			Content: "Clan not found",
-		}
-
-		if err != nil {
-			res.Embeds = append(res.Embeds, s.embedError(err))
-		}
-
-		//nolint:wrapcheck
-		return res, err
-	}
+	var res discord.Response
 
 	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
+		res.Content = "Error"
+
+		telemetry.RecordErrorBackground(err)
+	} else {
+		res.Content = "Clan added"
 	}
 
-	return &discord.Response{
-		Content: "Debug",
-		Embeds: []*discordgo.MessageEmbed{
-			{
-				Fields: []*discordgo.MessageEmbedField{
-					{
-						Name:  "Tag",
-						Value: clan.Tag,
-					},
-					{
-						Name:  "Name",
-						Value: clan.Name,
-					},
-					{
-						Name:  "Members",
-						Value: strconv.Itoa(clan.MembersCount),
-					},
-					{
-						Name:  "DS Server",
-						Value: event.GuildID,
-					},
-				},
-			},
-		},
-	}, nil
+	if clan != nil {
+		res.Embeds = append(res.Embeds, s.embedClan(clan))
+	}
+
+	return &res, nil
+}
+
+func (s *Service) cmdClanRemove(
+	event *discordgo.InteractionCreate,
+	data *discord.CommandData,
+) (*discord.Response, error) {
+	request := domain.ClanAddRequest{
+		ServerID: event.GuildID,
+		ClanTag:  data.String("clan"),
+		Region:   models.Region(data.String("server")),
+	}
+
+	clan, err := s.domain.ClanRemove(context.TODO(), &request)
+
+	var res discord.Response
+
+	if err != nil {
+		res.Content = "Error"
+
+		telemetry.RecordErrorBackground(err)
+	} else {
+		res.Content = "Clan removed"
+	}
+
+	if clan != nil {
+		res.Embeds = append(res.Embeds, s.embedClan(clan))
+	}
+
+	return &res, nil
 }

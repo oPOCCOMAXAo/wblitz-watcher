@@ -5,6 +5,4 @@ type BotInstance struct {
 	ServerID  string
 	ChannelID string
 	Type      SubscriptionType
-	CreatedAt int64
-	UpdatedAt int64
 }

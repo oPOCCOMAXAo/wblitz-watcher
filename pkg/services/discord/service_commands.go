@@ -26,28 +26,6 @@ func (s *Service) RegisterCommand(params CommandParams) {
 	}
 }
 
-func (s *Service) RegisterCommandHandler(
-	name string,
-	handler CommandHandler,
-) {
-	s.RegisterCommand(CommandParams{
-		Name:    name,
-		Handler: handler,
-	})
-}
-
-func (s *Service) RegisterSubCommandHandler(
-	name string,
-	subName string,
-	handler CommandHandler,
-) {
-	s.RegisterCommand(CommandParams{
-		Name:    name,
-		SubName: subName,
-		Handler: handler,
-	})
-}
-
 func (s *Service) cmdPing(
 	_ *discordgo.InteractionCreate,
 	_ *CommandData,

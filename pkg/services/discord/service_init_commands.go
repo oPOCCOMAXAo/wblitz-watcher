@@ -12,10 +12,7 @@ func (s *Service) onReady(
 ) {
 	log.Printf("%+v\n", event)
 
-	bulkCmds := []*discordgo.ApplicationCommand{}
-	for _, desc := range s.getCommands() {
-		bulkCmds = append(bulkCmds, desc)
-	}
+	bulkCmds := s.getCommands()
 
 	names := map[string]bool{}
 	for _, cmd := range bulkCmds {

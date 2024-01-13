@@ -44,6 +44,13 @@ func (s *Service) Serve() error {
 		IsPrivate: true,
 	})
 
+	s.discord.RegisterCommand(discord.CommandParams{
+		Name:      "clan",
+		SubName:   "remove",
+		Handler:   s.cmdClanRemove,
+		IsPrivate: true,
+	})
+
 	return nil
 }
 

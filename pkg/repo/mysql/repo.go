@@ -60,14 +60,14 @@ VALUES (?, ?, ?, ?, ?)`,
 	return nil
 }
 
-func (r *Repository) GetInstanceByServer(
+func (r *Repository) GetInstance(
 	ctx context.Context,
-	serverID string,
+	value *models.BotInstance,
 ) (*models.BotInstance, error) {
 	stmt, err := r.db.PrepareContext(ctx,
-		`SELECT id, server_id, channel_id, type, created_at, updated_at
+		`SELECT id, server_id, channel_id, type
 FROM bot_instance
-WHERE server_id = ?`,
+WHERE server_id = ? AND type = ?`,
 	)
 	if err != nil {
 		return nil, errors.WithStack(err)
@@ -76,7 +76,10 @@ WHERE server_id = ?`,
 
 	var res models.BotInstance
 
-	row := stmt.QueryRowContext(ctx, serverID)
+	row := stmt.QueryRowContext(ctx,
+		value.ServerID,
+		value.Type,
+	)
 
 	err = row.Err()
 	if err != nil {
@@ -89,8 +92,6 @@ WHERE server_id = ?`,
 			&res.ServerID,
 			&res.ChannelID,
 			&res.Type,
-			&res.CreatedAt,
-			&res.UpdatedAt,
 		)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -130,6 +131,153 @@ WHERE id = ?`,
 		value.Type,
 		now,
 		value.ID,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) CreateSubscriptionClan(
+	ctx context.Context,
+	value *models.SubscriptionClan,
+) error {
+	if value.ID != 0 {
+		return errors.WithStack(models.ErrAlreadyExists)
+	}
+
+	stmt, err := r.db.PrepareContext(ctx,
+		`INSERT INTO subscription_clan (instance_id, clan_id, region, created_at, updated_at)
+VALUES (?, ?, ?, ?, ?)`,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	now := time.Now().Unix()
+
+	res, err := stmt.ExecContext(ctx,
+		value.InstanceID,
+		value.ClanID,
+		value.Region,
+		now,
+		now,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	value.ID, err = res.LastInsertId()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) GetSubscriptionClan(
+	ctx context.Context,
+	value *models.SubscriptionClan,
+) (*models.SubscriptionClan, error) {
+	stmt, err := r.db.PrepareContext(ctx,
+		`SELECT id, instance_id, clan_id, region
+FROM subscription_clan
+WHERE instance_id = ? AND clan_id = ? AND region = ?`,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	var res models.SubscriptionClan
+
+	row := stmt.QueryRowContext(ctx,
+		value.InstanceID,
+		value.ClanID,
+		value.Region,
+	)
+
+	err = row.Err()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	err = row.
+		Scan(
+			&res.ID,
+			&res.InstanceID,
+			&res.ClanID,
+			&res.Region,
+		)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.WithStack(models.ErrNotFound)
+		}
+
+		return nil, errors.WithStack(err)
+	}
+
+	return &res, nil
+}
+
+func (r *Repository) UpdateSubscriptionClan(
+	ctx context.Context,
+	value *models.SubscriptionClan,
+) error {
+	if value.ID == 0 {
+		return errors.WithStack(models.ErrNotFound)
+	}
+
+	stmt, err := r.db.PrepareContext(ctx,
+		`UPDATE subscription_clan
+SET instance_id = ?, clan_id = ?, region = ?, updated_at = ?
+WHERE id = ?`,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	now := time.Now().Unix()
+
+	_, err = stmt.ExecContext(ctx,
+		value.InstanceID,
+		value.ClanID,
+		value.Region,
+		now,
+		value.ID,
+	)
+
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) DeleteSubscriptionClan(
+	ctx context.Context,
+	value *models.SubscriptionClan,
+) error {
+	stmt, err := r.db.PrepareContext(ctx,
+		`DELETE FROM subscription_clan
+WHERE instance_id = ? AND clan_id = ? AND region = ?`,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.ExecContext(ctx,
+		value.InstanceID,
+		value.ClanID,
+		value.Region,
 	)
 	if err != nil {
 		return errors.WithStack(err)

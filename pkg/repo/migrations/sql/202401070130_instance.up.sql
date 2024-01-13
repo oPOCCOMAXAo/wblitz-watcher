@@ -4,5 +4,6 @@ CREATE TABLE bot_instance (
     channel_id VARCHAR(64) NOT NULL,
     type ENUM('clan') NOT NULL,
     created_at BIGINT NOT NULL,
-    updated_at BIGINT NOT NULL
+    updated_at BIGINT NOT NULL,
+    UNIQUE KEY (server_id, type)
 );

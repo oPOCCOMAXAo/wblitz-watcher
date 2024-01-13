@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/samber/do"
 
+	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/repo"
 )
 
@@ -16,8 +17,15 @@ func Provide(
 			return nil, err
 		}
 
+		wg, err := wg.Invoke(i)
+		if err != nil {
+			//nolint:wrapcheck
+			return nil, err
+		}
+
 		return NewService(
 			repo,
+			wg,
 		), nil
 	})
 }
