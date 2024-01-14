@@ -32,5 +32,5 @@ func (r *Repository) placeholders(count int) string {
 }
 
 func (r *Repository) placeholdersGroup(groupsCount, groupSize int) string {
-	return strings.CopyJoin(r.placeholders(groupSize), ",", groupsCount)
+	return strings.CopyJoin("("+r.placeholders(groupSize)+")", ",", groupsCount)
 }
