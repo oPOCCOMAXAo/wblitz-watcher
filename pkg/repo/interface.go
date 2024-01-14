@@ -9,6 +9,7 @@ import (
 
 var _ Repository = (*mysql.Repository)(nil)
 
+//nolint:interfacebloat
 type Repository interface {
 	CreateInstance(context.Context, *models.BotInstance) error
 	GetInstance(context.Context, *models.BotInstance) (*models.BotInstance, error)
@@ -18,4 +19,9 @@ type Repository interface {
 	GetSubscriptionClan(context.Context, *models.SubscriptionClan) (*models.SubscriptionClan, error)
 	UpdateSubscriptionClan(context.Context, *models.SubscriptionClan) error
 	DeleteSubscriptionClan(context.Context, *models.SubscriptionClan) error
+
+	CreateUpdateWGClan(context.Context, *models.WGClan) error
+	GetWGClan(context.Context, *models.WGClan) (*models.WGClan, error)
+	UpdateWGClansMembersUpdatedAt(context.Context, int64, []models.WGClanID) error
+	GetWGClanListByInstance(context.Context, int64) ([]*models.WGClan, error)
 }

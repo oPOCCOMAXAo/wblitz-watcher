@@ -23,6 +23,7 @@ type errorsHandler struct{}
 func HandleErrors() gin.HandlerFunc {
 	return (&errorsHandler{}).Handle
 }
+
 func (h *errorsHandler) Handle(ctx *gin.Context) {
 	body, err := ioutils.SniffReadCloser(&ctx.Request.Body)
 	if err != nil {

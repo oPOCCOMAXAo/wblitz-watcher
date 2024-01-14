@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pkg/errors"
+	"github.com/samber/do"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace"
@@ -13,6 +14,8 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
 )
+
+var _ do.Shutdownable = (*Service)(nil)
 
 type Service struct {
 	provider *sdktrace.TracerProvider
@@ -97,6 +100,10 @@ func (s *Service) Close(ctx context.Context) error {
 	err := s.provider.Shutdown(ctx)
 
 	return errors.WithStack(err)
+}
+
+func (s *Service) Shutdown() error {
+	return s.Close(context.Background())
 }
 
 func (s *Service) TestContext(t *testing.T) context.Context {

@@ -3,17 +3,23 @@ package discord
 import "github.com/bwmarrin/discordgo"
 
 func (s *Service) responseInProgress(
-	interaction *discordgo.Interaction,
+	event *discordgo.InteractionCreate,
+	data *CommandData,
 ) error {
-	return s.session.InteractionRespond(
-		interaction,
-		&discordgo.InteractionResponse{
-			Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
-			Data: &discordgo.InteractionResponseData{
-				Flags: discordgo.MessageFlagsEphemeral,
-			},
+	res := discordgo.InteractionResponse{
+		Type: discordgo.InteractionResponseDeferredChannelMessageWithSource,
+		Data: &discordgo.InteractionResponseData{
+			Flags: discordgo.MessageFlagsLoading,
 		},
-	)
+	}
+
+	isPrivate := s.isPrivate[data.ID()]
+	if isPrivate {
+		res.Data.Flags |= discordgo.MessageFlagsEphemeral
+	}
+
+	//nolint:wrapcheck
+	return s.session.InteractionRespond(event.Interaction, &res)
 }
 
 func (s *Service) getNoAccessResponse() *Response {

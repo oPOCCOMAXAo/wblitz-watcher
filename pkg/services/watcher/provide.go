@@ -8,7 +8,6 @@ import (
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/domain"
 )
 
-//nolint:varnamelen
 func Provide(
 	i *do.Injector,
 ) {

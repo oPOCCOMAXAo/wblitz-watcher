@@ -13,12 +13,15 @@ func (s *Service) onInteractionCreate(
 	session *discordgo.Session,
 	event *discordgo.InteractionCreate,
 ) {
-	err := s.responseInProgress(event.Interaction)
+	data := s.parseInteractionData(event)
+	log.Printf("%s\n", data.Name)
+
+	err := s.responseInProgress(event, data)
 	if err != nil {
 		log.Printf("%+v\n", err)
 	}
 
-	resp, err := s.processEvent(event)
+	resp, err := s.processEvent(event, data)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrNoAccess):
@@ -45,11 +48,8 @@ func (s *Service) onInteractionCreate(
 
 func (s *Service) processEvent(
 	event *discordgo.InteractionCreate,
+	data *CommandData,
 ) (*Response, error) {
-	data := s.parseInteractionData(event)
-
-	log.Printf("%s\n", data.Name)
-
 	id := data.ID()
 
 	handler, ok := s.handlers[id]
@@ -57,8 +57,7 @@ func (s *Service) processEvent(
 		return nil, models.ErrNotFound
 	}
 
-	_, ok = s.accessRequired[id]
-	if ok {
+	if s.isRestricted[id] {
 		err := s.VerifyAccess(event)
 		if err != nil {
 			return nil, err

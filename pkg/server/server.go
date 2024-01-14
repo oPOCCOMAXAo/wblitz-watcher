@@ -6,10 +6,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/samber/do"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/middleware"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
+
+var _ do.Shutdownable = (*Server)(nil)
 
 type Server struct {
 	config Config

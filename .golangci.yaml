@@ -22,6 +22,7 @@ linters-settings:
       - i
       - tx # transaction
       - tC # test case
+      - wg # wait group, wargaming
   gofumpt:
     module-path: github.com/opoccomaxao/wblitz-watcher
     extra-rules: true
@@ -38,6 +39,7 @@ linters-settings:
     exclude-functions:
       - (*github.com/gin-gonic/gin.Error).SetType
       - (*github.com/gin-gonic/gin.Context).AbortWithError
+      - (*github.com/gin-gonic/gin.Context).Error
 
 linters:
   disable-all: true

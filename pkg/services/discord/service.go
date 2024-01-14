@@ -8,11 +8,12 @@ import (
 )
 
 type Service struct {
-	config         Config
-	session        *discordgo.Session
-	owner          *discordgo.User
-	handlers       map[CommandFullName]CommandHandler
-	accessRequired map[CommandFullName]bool
+	config       Config
+	session      *discordgo.Session
+	owner        *discordgo.User
+	handlers     map[CommandFullName]CommandHandler
+	isRestricted map[CommandFullName]bool
+	isPrivate    map[CommandFullName]bool
 }
 
 type Config struct {
@@ -62,10 +63,12 @@ func (s *Service) init() error {
 	s.owner = application.Owner
 
 	s.handlers = map[CommandFullName]CommandHandler{}
-	s.accessRequired = map[CommandFullName]bool{}
+	s.isRestricted = map[CommandFullName]bool{}
+	s.isPrivate = map[CommandFullName]bool{}
 	s.RegisterCommand(CommandParams{
-		Name:    "ping",
-		Handler: s.cmdPing,
+		Name:      "ping",
+		Handler:   s.cmdPing,
+		IsPrivate: true,
 	})
 
 	s.session.AddHandler(s.onReady)

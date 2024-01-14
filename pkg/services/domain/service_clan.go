@@ -42,7 +42,7 @@ type ClanAddRequest struct {
 func (s *Service) ClanAdd(
 	ctx context.Context,
 	request *ClanAddRequest,
-) (*wg.ClanListEntry, error) {
+) (*models.WGClan, error) {
 	instance := &models.BotInstance{
 		ServerID:  request.ServerID,
 		ChannelID: "",
@@ -63,19 +63,31 @@ func (s *Service) ClanAdd(
 		return nil, err
 	}
 
+	res := models.WGClan{
+		ID:     clan.ClanID,
+		Region: request.Region,
+		Tag:    clan.Tag,
+		Name:   clan.Name,
+	}
+
+	err = s.EnsureWGClan(ctx, &res)
+	if err != nil {
+		return &res, err
+	}
+
 	subscription := &models.SubscriptionClan{
 		InstanceID: instance.ID,
 		ClanID:     clan.ClanID,
 		Region:     request.Region,
 	}
 
-	return clan, s.EnsureSubscriptionClan(ctx, subscription)
+	return &res, s.EnsureSubscriptionClan(ctx, subscription)
 }
 
 func (s *Service) ClanRemove(
 	ctx context.Context,
 	request *ClanAddRequest,
-) (*wg.ClanListEntry, error) {
+) (*models.WGClan, error) {
 	instance := &models.BotInstance{
 		ServerID:  request.ServerID,
 		ChannelID: "",
@@ -93,7 +105,19 @@ func (s *Service) ClanRemove(
 	})
 	if err != nil {
 		//nolint:wrapcheck
-		return clan, err
+		return nil, err
+	}
+
+	res := models.WGClan{
+		ID:     clan.ClanID,
+		Region: request.Region,
+		Tag:    clan.Tag,
+		Name:   clan.Name,
+	}
+
+	err = s.EnsureWGClan(ctx, &res)
+	if err != nil {
+		return &res, err
 	}
 
 	subscription := &models.SubscriptionClan{
@@ -102,5 +126,39 @@ func (s *Service) ClanRemove(
 		Region:     request.Region,
 	}
 
-	return clan, s.repo.DeleteSubscriptionClan(ctx, subscription)
+	err = s.EnsureSubscriptionClan(ctx, subscription)
+	if err != nil {
+		return &res, err
+	}
+
+	return &res, nil
+}
+
+type ClanListRequest struct {
+	ServerID string
+}
+
+func (s *Service) ClanList(
+	ctx context.Context,
+	request *ClanListRequest,
+) ([]*models.WGClan, error) {
+	instance := &models.BotInstance{
+		ServerID:  request.ServerID,
+		ChannelID: "",
+		Type:      models.STClan,
+	}
+
+	instance, err := s.repo.GetInstance(ctx, instance)
+	if err != nil {
+		//nolint:wrapcheck
+		return nil, err
+	}
+
+	clans, err := s.repo.GetWGClanListByInstance(ctx, instance.ID)
+	if err != nil {
+		//nolint:wrapcheck
+		return nil, err
+	}
+
+	return clans, nil
 }

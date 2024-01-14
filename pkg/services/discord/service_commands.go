@@ -5,10 +5,11 @@ import (
 )
 
 type CommandParams struct {
-	Name      string
-	SubName   string
-	Handler   CommandHandler
-	IsPrivate bool
+	Name         string
+	SubName      string
+	Handler      CommandHandler
+	IsRestricted bool
+	IsPrivate    bool
 }
 
 func (s *Service) RegisterCommand(params CommandParams) {
@@ -21,8 +22,12 @@ func (s *Service) RegisterCommand(params CommandParams) {
 		s.handlers[id] = params.Handler
 	}
 
+	if params.IsRestricted {
+		s.isRestricted[id] = true
+	}
+
 	if params.IsPrivate {
-		s.accessRequired[id] = true
+		s.isPrivate[id] = true
 	}
 }
 

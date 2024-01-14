@@ -68,3 +68,30 @@ func (s *Service) cmdClanRemove(
 
 	return &res, nil
 }
+
+func (s *Service) cmdClanList(
+	event *discordgo.InteractionCreate,
+	_ *discord.CommandData,
+) (*discord.Response, error) {
+	request := domain.ClanListRequest{
+		ServerID: event.GuildID,
+	}
+
+	clans, err := s.domain.ClanList(context.TODO(), &request)
+
+	var res discord.Response
+
+	if err != nil {
+		res.Content = "Error"
+
+		telemetry.RecordErrorBackground(err)
+	} else {
+		res.Content = "Clans"
+	}
+
+	if clans != nil {
+		res.Embeds = append(res.Embeds, s.embedClanList(clans)...)
+	}
+
+	return &res, nil
+}

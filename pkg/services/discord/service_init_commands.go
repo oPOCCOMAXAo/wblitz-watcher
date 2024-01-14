@@ -66,6 +66,21 @@ func (s *Service) getCommands() []*discordgo.ApplicationCommand {
 			},
 		},
 		{
+			Name:        "user",
+			Description: "User commands",
+			Options: []*discordgo.ApplicationCommandOption{
+				{
+					Type:        discordgo.ApplicationCommandOptionSubCommand,
+					Name:        "stats",
+					Description: "Get user stats",
+					Options: []*discordgo.ApplicationCommandOption{
+						s.getUsernameOption(),
+						s.getWotbServerOption(),
+					},
+				},
+			},
+		},
+		{
 			Name:        "channel",
 			Description: "Channel commands",
 			Options: []*discordgo.ApplicationCommandOption{

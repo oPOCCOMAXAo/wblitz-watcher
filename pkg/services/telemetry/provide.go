@@ -6,6 +6,7 @@ import (
 	"github.com/samber/do"
 )
 
+//nolint:revive // context here is parameter.
 func Provide(
 	i *do.Injector,
 	appCtx context.Context,
