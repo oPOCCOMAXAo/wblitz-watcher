@@ -6,12 +6,19 @@ import (
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/domain"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
 func Provide(
 	i *do.Injector,
 ) {
 	do.Provide(i, func(i *do.Injector) (*Service, error) {
+		telemetry, err := telemetry.Invoke(i)
+		if err != nil {
+			//nolint:wrapcheck
+			return nil, err
+		}
+
 		discord, err := discord.Invoke(i)
 		if err != nil {
 			//nolint:wrapcheck
@@ -31,6 +38,7 @@ func Provide(
 		}
 
 		return NewService(
+			telemetry,
 			discord,
 			wg,
 			domain,

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"golang.org/x/time/rate"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
@@ -28,7 +29,8 @@ func New(config Config) *Client {
 	res := Client{
 		config: config,
 		client: &http.Client{
-			Timeout: 30 * time.Second,
+			Timeout:   30 * time.Second,
+			Transport: otelhttp.NewTransport(http.DefaultTransport),
 		},
 		limiter: rate.NewLimiter(rate.Limit(20), 10),
 	}

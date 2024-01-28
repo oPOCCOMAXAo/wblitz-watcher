@@ -18,8 +18,8 @@ type AccountInfoRequest struct {
 func (c *Client) AccountInfo(
 	ctx context.Context,
 	request AccountInfoRequest,
-) (map[jsonutils.MaybeInt]*AccountInfo, error) {
-	res := map[jsonutils.MaybeInt]*AccountInfo{}
+) (map[int64]*AccountInfo, error) {
+	tempRes := map[jsonutils.MaybeInt]*AccountInfo{}
 
 	for _, ids := range lo.Chunk(request.IDs, 100) {
 		err := c.Request(ctx, &Request{
@@ -29,11 +29,40 @@ func (c *Client) AccountInfo(
 			Data: url.Values{
 				"account_id": {JoinInt64(ids, ",")},
 			},
-		}, &res)
+		}, &tempRes)
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	res := make(map[int64]*AccountInfo, len(tempRes))
+
+	for _, account := range tempRes {
+		if account == nil {
+			continue
+		}
+
+		res[account.AccountID] = account
+	}
+
 	return res, nil
+}
+
+func (c *Client) GetAccountByID(
+	ctx context.Context,
+	id models.WGAccountID,
+) (*AccountInfo, error) {
+	res, err := c.AccountInfo(ctx, AccountInfoRequest{
+		Region: id.Region,
+		IDs:    []int64{id.ID},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for _, v := range res {
+		return v, nil
+	}
+
+	return nil, models.ErrNotFound
 }

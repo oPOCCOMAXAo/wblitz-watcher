@@ -177,3 +177,53 @@ ORDER BY sc.id ASC`,
 
 	return res, nil
 }
+
+func (r *Repository) GetWGClansWithSubscriptions(
+	ctx context.Context,
+) ([]*models.WGClan, error) {
+	stmt, err := r.db.PrepareContext(ctx,
+		`SELECT wc.id, wc.region, wc.tag, wc.name, wc.updated_at, wc.members_updated_at
+FROM wg_clan wc
+JOIN subscription_clan sc ON sc.clan_id = wc.id AND sc.region = wc.region
+GROUP BY wc.id, wc.region`,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer rows.Close()
+
+	var res []*models.WGClan
+
+	for rows.Next() {
+		var item models.WGClan
+
+		err = rows.Scan(
+			&item.ID,
+			&item.Region,
+			&item.Tag,
+			&item.Name,
+			&item.UpdatedAt,
+			&item.MembersUpdatedAt,
+		)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		res = append(res, &item)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return res, nil
+}

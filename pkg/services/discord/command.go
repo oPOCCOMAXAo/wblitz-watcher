@@ -1,6 +1,9 @@
 package discord
 
 import (
+	"context"
+	"strings"
+
 	"github.com/bwmarrin/discordgo"
 
 	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
@@ -11,7 +14,11 @@ type CommandFullName struct {
 	SubName string
 }
 
-type CommandHandler func(*discordgo.InteractionCreate, *CommandData) (*Response, error)
+type CommandHandler func(
+	context.Context,
+	*discordgo.InteractionCreate,
+	*CommandData,
+) (*Response, error)
 
 type CommandData struct {
 	Name    []string
@@ -30,6 +37,10 @@ func (d *CommandData) ID() CommandFullName {
 	}
 
 	return res
+}
+
+func (d *CommandData) RequestName() string {
+	return strings.Join(d.Name, " ")
 }
 
 func (d *CommandData) String(name string) string {

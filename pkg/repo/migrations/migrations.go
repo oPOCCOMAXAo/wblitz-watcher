@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"errors"
@@ -13,8 +14,8 @@ import (
 
 type Migration struct {
 	ID       string
-	Migrate  func(*sql.DB) error
-	Rollback func(*sql.DB) error
+	Migrate  func(context.Context, *sql.DB) error
+	Rollback func(context.Context, *sql.DB) error
 }
 
 var _ FS = embed.FS{}
@@ -121,12 +122,12 @@ func prepareStatements(rawData []byte) []string {
 	})
 }
 
-func wrapRawSQL(rawData []byte) func(*sql.DB) error {
-	return func(db *sql.DB) error {
+func wrapRawSQL(rawData []byte) func(context.Context, *sql.DB) error {
+	return func(ctx context.Context, db *sql.DB) error {
 		sqls := prepareStatements(rawData)
 
 		for _, sql := range sqls {
-			_, err := db.Exec(sql)
+			_, err := db.ExecContext(ctx, sql)
 			if err != nil {
 				//nolint:wrapcheck
 				return err

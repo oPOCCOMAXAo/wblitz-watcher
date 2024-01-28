@@ -40,7 +40,7 @@ func (e *ResponseError) GetError() error {
 }
 
 type ResponseMeta struct {
-	Conunt int `json:"count"`
+	Count int64 `json:"count"`
 }
 
 type Response struct {
@@ -51,14 +51,21 @@ type Response struct {
 }
 
 type ClanInfo struct {
-	MembersCount int           `json:"members_count"`
+	MembersCount int64         `json:"members_count"`
 	Name         string        `json:"name"`
 	CreatorName  string        `json:"creator_name"`
-	ClanID       int           `json:"clan_id"`
-	LeaderID     int           `json:"leader_id"`
-	MembersIDs   []int         `json:"members_ids"`
+	ClanID       int64         `json:"clan_id"`
+	LeaderID     int64         `json:"leader_id"`
+	MembersIDs   []int64       `json:"members_ids"`
 	Tag          string        `json:"tag"`
 	Region       models.Region `json:"-"`
+}
+
+func (c *ClanInfo) WGClanID() models.WGClanID {
+	return models.WGClanID{
+		ID:     c.ClanID,
+		Region: c.Region,
+	}
 }
 
 func (c *ClanInfo) StatName() string {
@@ -66,25 +73,25 @@ func (c *ClanInfo) StatName() string {
 }
 
 type StatisticsEntry struct {
-	Spotted              int `json:"spotted"`
-	MaxFragsTankID       int `json:"max_frags_tank_id"`
-	Hits                 int `json:"hits"`
-	Frags                int `json:"frags"`
-	MaxXP                int `json:"max_xp"`
-	MaxXPTankID          int `json:"max_xp_tank_id"`
-	Wins                 int `json:"wins"`
-	Losses               int `json:"losses"`
-	CapturePoints        int `json:"capture_points"`
-	Battles              int `json:"battles"`
-	DamageDealt          int `json:"damage_dealt"`
-	DamageReceived       int `json:"damage_received"`
-	MaxFrags             int `json:"max_frags"`
-	Shots                int `json:"shots"`
-	Frags8p              int `json:"frags8p"`
-	XP                   int `json:"xp"`
-	WinAndSurvived       int `json:"win_and_survived"`
-	SurvivedBattles      int `json:"survived_battles"`
-	DroppedCapturePoints int `json:"dropped_capture_points"`
+	Spotted              int64 `json:"spotted"`
+	MaxFragsTankID       int64 `json:"max_frags_tank_id"`
+	Hits                 int64 `json:"hits"`
+	Frags                int64 `json:"frags"`
+	MaxXP                int64 `json:"max_xp"`
+	MaxXPTankID          int64 `json:"max_xp_tank_id"`
+	Wins                 int64 `json:"wins"`
+	Losses               int64 `json:"losses"`
+	CapturePoints        int64 `json:"capture_points"`
+	Battles              int64 `json:"battles"`
+	DamageDealt          int64 `json:"damage_dealt"`
+	DamageReceived       int64 `json:"damage_received"`
+	MaxFrags             int64 `json:"max_frags"`
+	Shots                int64 `json:"shots"`
+	Frags8p              int64 `json:"frags8p"`
+	XP                   int64 `json:"xp"`
+	WinAndSurvived       int64 `json:"win_and_survived"`
+	SurvivedBattles      int64 `json:"survived_battles"`
+	DroppedCapturePoints int64 `json:"dropped_capture_points"`
 }
 
 type AccountStatistics struct {
@@ -93,7 +100,7 @@ type AccountStatistics struct {
 }
 
 type AccountInfo struct {
-	AccountID      int               `json:"account_id"`
+	AccountID      int64             `json:"account_id"`
 	Nickname       string            `json:"nickname"`
 	LastBattleTime int64             `json:"last_battle_time"`
 	Statistics     AccountStatistics `json:"statistics"`
@@ -132,5 +139,5 @@ type ClanListEntry struct {
 	ClanID       int64  `json:"clan_id"`
 	Tag          string `json:"tag"`
 	Name         string `json:"name"`
-	MembersCount int    `json:"members_count"`
+	MembersCount int64  `json:"members_count"`
 }

@@ -1,12 +1,17 @@
 package discord
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"log"
 
 	"github.com/bwmarrin/discordgo"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
 func (s *Service) onInteractionCreate(
@@ -16,12 +21,21 @@ func (s *Service) onInteractionCreate(
 	data := s.parseInteractionData(event)
 	log.Printf("%s\n", data.Name)
 
+	ctx, span := s.tracer.Start(
+		context.Background(),
+		"cmd:"+data.RequestName(),
+		trace.WithSpanKind(trace.SpanKindClient),
+	)
+	defer span.End()
+
+	s.writeTelemetry(span, event, data)
+
 	err := s.responseInProgress(event, data)
 	if err != nil {
-		log.Printf("%+v\n", err)
+		telemetry.RecordErrorFail(ctx, err)
 	}
 
-	resp, err := s.processEvent(event, data)
+	resp, err := s.processEvent(ctx, event, data)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrNoAccess):
@@ -29,7 +43,7 @@ func (s *Service) onInteractionCreate(
 		case errors.Is(err, models.ErrNotFound):
 			resp = s.getNotFoundResponse()
 		default:
-			log.Printf("%+v\n", err)
+			telemetry.RecordErrorFail(ctx, err)
 		}
 	}
 
@@ -42,11 +56,32 @@ func (s *Service) onInteractionCreate(
 		resp.WebHookEdit(),
 	)
 	if err != nil {
-		log.Printf("%+v\n", err)
+		telemetry.RecordErrorFail(ctx, err)
 	}
 }
 
+func (s *Service) writeTelemetry(
+	span trace.Span,
+	event *discordgo.InteractionCreate,
+	data *CommandData,
+) {
+	attrs := []attribute.KeyValue{
+		attribute.String("interaction.id", event.ID),
+		attribute.String("interaction.type", event.Type.String()),
+	}
+
+	for key, value := range data.Options {
+		attrs = append(attrs, attribute.String(
+			"interaction.option."+key,
+			fmt.Sprint(value)),
+		)
+	}
+
+	span.SetAttributes(attrs...)
+}
+
 func (s *Service) processEvent(
+	ctx context.Context,
 	event *discordgo.InteractionCreate,
 	data *CommandData,
 ) (*Response, error) {
@@ -64,7 +99,7 @@ func (s *Service) processEvent(
 		}
 	}
 
-	resp, err := handler(event, data)
+	resp, err := handler(ctx, event, data)
 	if err != nil {
 		return nil, err
 	}

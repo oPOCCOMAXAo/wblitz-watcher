@@ -10,8 +10,12 @@ func (r *Repository) CreateUpdateWGClanMembers(
 	ctx context.Context,
 	values []*models.WGClanMember,
 ) error {
+	if len(values) == 0 {
+		return nil
+	}
+
 	//nolint:gosec // here placeholders are safe.
-	sql := `INSERT INTO wg_clan_members (region, clan_id, account_id) VALUES ` +
+	sql := `INSERT INTO wg_clan_member (region, clan_id, account_id) VALUES ` +
 		r.placeholdersGroup(len(values), 3) +
 		` ON DUPLICATE KEY UPDATE region = VALUES(region), clan_id = VALUES(clan_id)`
 
@@ -41,8 +45,12 @@ func (r *Repository) DeleteWGClanMembers(
 	ctx context.Context,
 	values []*models.WGClanMember,
 ) error {
+	if len(values) == 0 {
+		return nil
+	}
+
 	//nolint:gosec // here placeholders are safe.
-	sql := `DELETE FROM wg_clan_members WHERE (region, clan_id, account_id) IN (` +
+	sql := `DELETE FROM wg_clan_member WHERE (region, clan_id, account_id) IN (` +
 		r.placeholdersGroup(len(values), 3) +
 		`)`
 
@@ -78,7 +86,7 @@ func (r *Repository) GetWGClanMembers(
 	}
 
 	//nolint:gosec // here placeholders are safe.
-	sql := `SELECT region, clan_id, account_id FROM wg_clan_members WHERE (clan_id, region) IN (` +
+	sql := `SELECT region, clan_id, account_id FROM wg_clan_member WHERE (clan_id, region) IN (` +
 		r.placeholdersGroup(len(ids), 2) +
 		`)`
 
@@ -132,7 +140,7 @@ func (r *Repository) GetWGClanMembers(
 			mapByID[id] = members
 		}
 
-		members.MembersID = append(members.MembersID, accountID)
+		members.MembersIDs = append(members.MembersIDs, accountID)
 	}
 
 	err = rows.Err()

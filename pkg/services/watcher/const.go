@@ -14,3 +14,15 @@ const (
 	ColorLoss  Color = 0x660000
 	ColorDraw  Color = 0x666600
 )
+
+const ClanInitializationIntervalSeconds = 24 * 60 * 60
+
+// messages.
+const (
+	MessageError   = "Error"
+	MessageEnter   = "Enter"
+	MessageLeave   = "Leave"
+	MessageWins    = "Wins"
+	MessageDamage  = "Damage"
+	MessageBattles = "Battles"
+)

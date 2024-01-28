@@ -69,7 +69,7 @@ func Run() error {
 		return err
 	}
 
-	err = watcher.Serve()
+	err = watcher.Serve(appCtx, cancelCauseFn)
 	if err != nil {
 		//nolint:wrapcheck
 		return err

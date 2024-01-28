@@ -3,6 +3,9 @@ package wg
 import (
 	"context"
 	"net/url"
+	"strings"
+
+	"github.com/pkg/errors"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
@@ -31,4 +34,24 @@ func (c *Client) AccountList(
 	}
 
 	return res, nil
+}
+
+func (c *Client) FindAccountByName(
+	ctx context.Context,
+	request AccountListRequest,
+) (*AccountListEntry, error) {
+	cmpStr := strings.ToLower(request.Search)
+
+	res, err := c.AccountList(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, account := range res {
+		if strings.ToLower(account.Nickname) == cmpStr {
+			return account, nil
+		}
+	}
+
+	return nil, errors.Wrap(ErrLimitExceeded, "account not found")
 }

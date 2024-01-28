@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/repo"
 )
@@ -18,4 +20,8 @@ func NewService(
 		repo: repo,
 		wg:   wg,
 	}
+}
+
+func (s *Service) now() int64 {
+	return time.Now().Unix()
 }

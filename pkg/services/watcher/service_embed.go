@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/samber/lo"
@@ -11,10 +12,10 @@ import (
 )
 
 func (s *Service) embedError(
-	err error,
+	_ error,
 ) *discordgo.MessageEmbed {
 	return &discordgo.MessageEmbed{
-		Title: "Error",
+		Title: MessageError,
 		Type:  discordgo.EmbedTypeRich,
 		Color: int(ColorError),
 	}
@@ -90,4 +91,55 @@ func (s *Service) embedClanList(
 	}
 
 	return res
+}
+
+func (s *Service) embedClanEvent(
+	event *models.EventClan,
+	clan *wg.ClanInfo,
+	user *wg.AccountInfo,
+) *discordgo.MessageEmbed {
+	embed := &discordgo.MessageEmbed{
+		Type:      discordgo.EmbedTypeRich,
+		Timestamp: time.Unix(event.Time, 0).Format(time.RFC3339),
+		Fields:    []*discordgo.MessageEmbedField{},
+	}
+
+	switch event.Type {
+	case models.ETCEnter:
+		embed.Color = int(ColorEnter)
+		embed.Description = MessageEnter
+	case models.ETCLeave:
+		embed.Color = int(ColorLeave)
+		embed.Description = MessageLeave
+	}
+
+	embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
+		Name:   "Clan",
+		Value:  clan.StatName(),
+		Inline: false,
+	})
+
+	embed.Author = &discordgo.MessageEmbedAuthor{
+		Name: user.AuthorName(),
+	}
+
+	embed.Fields = append(embed.Fields,
+		&discordgo.MessageEmbedField{
+			Name:   MessageWins,
+			Value:  user.StatWins(),
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   MessageDamage,
+			Value:  user.StatDamage(),
+			Inline: true,
+		},
+		&discordgo.MessageEmbedField{
+			Name:   MessageBattles,
+			Value:  user.StatBattles(),
+			Inline: true,
+		},
+	)
+
+	return embed
 }

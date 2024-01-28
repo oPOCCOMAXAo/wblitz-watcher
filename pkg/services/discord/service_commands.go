@@ -1,6 +1,8 @@
 package discord
 
 import (
+	"context"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -32,6 +34,7 @@ func (s *Service) RegisterCommand(params CommandParams) {
 }
 
 func (s *Service) cmdPing(
+	_ context.Context,
 	_ *discordgo.InteractionCreate,
 	_ *CommandData,
 ) (*Response, error) {

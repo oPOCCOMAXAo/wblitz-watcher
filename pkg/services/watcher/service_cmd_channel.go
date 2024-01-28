@@ -11,6 +11,7 @@ import (
 )
 
 func (s *Service) cmdChannelBind(
+	ctx context.Context,
 	event *discordgo.InteractionCreate,
 	data *discord.CommandData,
 ) (*discord.Response, error) {
@@ -20,7 +21,7 @@ func (s *Service) cmdChannelBind(
 		Type:      models.SubscriptionType(data.String("type")),
 	}
 
-	err := s.domain.ChannelBind(context.TODO(), &request)
+	err := s.domain.ChannelBind(ctx, &request)
 	if err != nil {
 		//nolint:wrapcheck
 		return nil, err

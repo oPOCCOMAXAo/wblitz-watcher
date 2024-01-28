@@ -12,6 +12,7 @@ import (
 )
 
 func (s *Service) cmdClanAdd(
+	ctx context.Context,
 	event *discordgo.InteractionCreate,
 	data *discord.CommandData,
 ) (*discord.Response, error) {
@@ -21,14 +22,14 @@ func (s *Service) cmdClanAdd(
 		Region:   models.Region(data.String("server")),
 	}
 
-	clan, err := s.domain.ClanAdd(context.TODO(), &request)
+	clan, err := s.domain.ClanAdd(ctx, &request)
 
 	var res discord.Response
 
 	if err != nil {
-		res.Content = "Error"
+		res.Content = MessageError
 
-		telemetry.RecordErrorBackground(err)
+		telemetry.RecordError(ctx, err)
 	} else {
 		res.Content = "Clan added"
 	}
@@ -41,6 +42,7 @@ func (s *Service) cmdClanAdd(
 }
 
 func (s *Service) cmdClanRemove(
+	ctx context.Context,
 	event *discordgo.InteractionCreate,
 	data *discord.CommandData,
 ) (*discord.Response, error) {
@@ -50,14 +52,14 @@ func (s *Service) cmdClanRemove(
 		Region:   models.Region(data.String("server")),
 	}
 
-	clan, err := s.domain.ClanRemove(context.TODO(), &request)
+	clan, err := s.domain.ClanRemove(ctx, &request)
 
 	var res discord.Response
 
 	if err != nil {
-		res.Content = "Error"
+		res.Content = MessageError
 
-		telemetry.RecordErrorBackground(err)
+		telemetry.RecordError(ctx, err)
 	} else {
 		res.Content = "Clan removed"
 	}
@@ -70,6 +72,7 @@ func (s *Service) cmdClanRemove(
 }
 
 func (s *Service) cmdClanList(
+	ctx context.Context,
 	event *discordgo.InteractionCreate,
 	_ *discord.CommandData,
 ) (*discord.Response, error) {
@@ -77,14 +80,14 @@ func (s *Service) cmdClanList(
 		ServerID: event.GuildID,
 	}
 
-	clans, err := s.domain.ClanList(context.TODO(), &request)
+	clans, err := s.domain.ClanList(ctx, &request)
 
 	var res discord.Response
 
 	if err != nil {
-		res.Content = "Error"
+		res.Content = MessageError
 
-		telemetry.RecordErrorBackground(err)
+		telemetry.RecordError(ctx, err)
 	} else {
 		res.Content = "Clans"
 	}

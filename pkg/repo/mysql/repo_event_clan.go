@@ -3,6 +3,7 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	_ "embed"
 	"errors"
 	"time"
 
@@ -11,11 +12,16 @@ import (
 
 func (r *Repository) CreateEventClan(
 	ctx context.Context,
-	value *models.EventClan,
+	values ...*models.EventClan,
 ) error {
+	if len(values) == 0 {
+		return nil
+	}
+
+	//nolint:gosec // here placeholders are safe.
 	stmt, err := r.db.PrepareContext(ctx,
 		`INSERT INTO event_clan (time, type, region, clan_id, account_id)
-VALUES (?, ?, ?, ?, ?)`,
+VALUES `+r.placeholdersGroup(len(values), 5),
 	)
 	if err != nil {
 		//nolint:wrapcheck
@@ -26,25 +32,22 @@ VALUES (?, ?, ?, ?, ?)`,
 
 	now := time.Now().Unix()
 
-	res, err := stmt.ExecContext(ctx,
-		now,
-		value.Type,
-		value.Region,
-		value.ClanID,
-		value.AccountID,
-	)
+	args := make([]any, 0, len(values)*5)
+	for _, value := range values {
+		args = append(args,
+			now,
+			value.Type,
+			value.Region,
+			value.ClanID,
+			value.AccountID,
+		)
+	}
+
+	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
 		//nolint:wrapcheck
 		return err
 	}
-
-	id, err := res.LastInsertId()
-	if err != nil {
-		//nolint:wrapcheck
-		return err
-	}
-
-	value.ID = id
 
 	return nil
 }
@@ -53,6 +56,10 @@ func (r *Repository) DeleteEventClansByID(
 	ctx context.Context,
 	ids []int64,
 ) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
 	//nolint:gosec // here placeholders are safe.
 	sql := `DELETE FROM event_clan WHERE id IN (` + r.placeholders(len(ids)) + `)`
 
@@ -119,67 +126,13 @@ WHERE id = ?`,
 	return &value, nil
 }
 
-func (r *Repository) GetEventClanForProcessing(
-	ctx context.Context,
-) (*models.EventClan, error) {
-	stmt, err := r.db.PrepareContext(ctx,
-		`SELECT id, time, type, region, clan_id, account_id, is_processed
-FROM event_clan
-WHERE is_processed = 0
-LIMIT 1`,
-	)
-	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
-	}
-
-	defer stmt.Close()
-
-	var value models.EventClan
-
-	err = stmt.
-		QueryRowContext(ctx).
-		Scan(
-			&value.ID,
-			&value.Time,
-			&value.Type,
-			&value.Region,
-			&value.ClanID,
-			&value.AccountID,
-			&value.IsProcessed,
-		)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNotFound
-		}
-
-		//nolint:wrapcheck
-		return nil, err
-	}
-
-	return &value, nil
-}
+//go:embed sql/update_event_clan_processed.sql
+var sqlUpdateEventClanProcessed string
 
 func (r *Repository) UpdateEventClanProcessed(
 	ctx context.Context,
-	value *models.EventClan,
 ) error {
-	stmt, err := r.db.PrepareContext(ctx,
-		`UPDATE event_clan
-SET is_processed = ?
-WHERE id = ?`,
-	)
-	if err != nil {
-		//nolint:wrapcheck
-		return err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.ExecContext(ctx,
-		value.IsProcessed,
-		value.ID,
-	)
+	_, err := r.db.ExecContext(ctx, sqlUpdateEventClanProcessed)
 	if err != nil {
 		//nolint:wrapcheck
 		return err

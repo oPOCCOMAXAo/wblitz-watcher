@@ -1,14 +1,22 @@
 package discord
 
 import (
+	"net/http"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/pkg/errors"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
 type Service struct {
 	config       Config
+	tracer       trace.Tracer
+	client       *http.Client
 	session      *discordgo.Session
 	owner        *discordgo.User
 	handlers     map[CommandFullName]CommandHandler
@@ -23,9 +31,15 @@ type Config struct {
 
 func New(
 	config Config,
+	telemetry *telemetry.Service,
 ) (*Service, error) {
 	res := Service{
 		config: config,
+		tracer: telemetry.PackageTracer("discord"),
+		client: &http.Client{
+			Timeout:   30 * time.Second,
+			Transport: otelhttp.NewTransport(http.DefaultTransport),
+		},
 	}
 
 	return &res, res.init()

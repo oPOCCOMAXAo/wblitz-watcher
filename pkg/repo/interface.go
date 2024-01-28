@@ -15,6 +15,7 @@ type Repository interface {
 	WGClan
 	WGClanMember
 	EventClan
+	DiscordMessage
 }
 
 type Instance interface {
@@ -35,6 +36,7 @@ type WGClan interface {
 	GetWGClan(context.Context, *models.WGClan) (*models.WGClan, error)
 	UpdateWGClansMembersUpdatedAt(context.Context, int64, []models.WGClanID) error
 	GetWGClanListByInstance(context.Context, int64) ([]*models.WGClan, error)
+	GetWGClansWithSubscriptions(context.Context) ([]*models.WGClan, error)
 }
 
 type WGClanMember interface {
@@ -44,9 +46,14 @@ type WGClanMember interface {
 }
 
 type EventClan interface {
-	CreateEventClan(context.Context, *models.EventClan) error
+	CreateEventClan(context.Context, ...*models.EventClan) error
 	GetEventClanByID(context.Context, int64) (*models.EventClan, error)
-	GetEventClanForProcessing(context.Context) (*models.EventClan, error)
-	UpdateEventClanProcessed(context.Context, *models.EventClan) error
+	UpdateEventClanProcessed(context.Context) error
 	DeleteEventClansByID(context.Context, []int64) error
+}
+
+type DiscordMessage interface {
+	CreateDiscordMessagesFromEventClan(context.Context) error
+	GetFirstUnsentDiscordMessage(context.Context) (*models.DiscordMessage, error)
+	UpdateDiscordMessagesProcessed(context.Context, []int64) error
 }

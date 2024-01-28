@@ -78,7 +78,7 @@ func (s *Service) SetAsDefault() {
 
 func (s *Service) Tracer() trace.Tracer {
 	return s.provider.Tracer(
-		"trading",
+		"wblitz-watcher",
 	)
 }
 

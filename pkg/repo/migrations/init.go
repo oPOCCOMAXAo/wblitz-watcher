@@ -1,6 +1,7 @@
 package migrations
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"sort"
@@ -11,7 +12,10 @@ import (
 //go:embed sql/*.sql
 var sqlDir embed.FS
 
-func Init(db *sql.DB) error {
+func Init(
+	ctx context.Context,
+	db *sql.DB,
+) error {
 	migrations, err := GetMigrations(sqlDir)
 	if err != nil {
 		return err
@@ -26,12 +30,12 @@ func Init(db *sql.DB) error {
 		return err
 	}
 
-	ids, err := initMigrator(db)
+	ids, err := initMigrator(ctx, db)
 	if err != nil {
 		return err
 	}
 
-	err = applyMigrations(db, ids, migrations)
+	err = applyMigrations(ctx, db, ids, migrations)
 	if err != nil {
 		return err
 	}
@@ -40,14 +44,15 @@ func Init(db *sql.DB) error {
 }
 
 func initMigrator(
+	ctx context.Context,
 	db *sql.DB,
 ) (map[string]struct{}, error) {
-	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS migrations (id VARCHAR(255) PRIMARY KEY)`)
+	_, err := db.ExecContext(ctx, `CREATE TABLE IF NOT EXISTS migrations (id VARCHAR(255) PRIMARY KEY)`)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
 
-	rows, err := db.Query(`SELECT id FROM migrations`)
+	rows, err := db.QueryContext(ctx, `SELECT id FROM migrations`)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -75,6 +80,7 @@ func initMigrator(
 }
 
 func applyMigrations(
+	ctx context.Context,
 	db *sql.DB,
 	ids map[string]struct{},
 	migrations []*Migration,
@@ -84,7 +90,7 @@ func applyMigrations(
 			continue
 		}
 
-		err := applyMigration(db, migration)
+		err := applyMigration(ctx, db, migration)
 		if err != nil {
 			return err
 		}
@@ -96,6 +102,7 @@ func applyMigrations(
 }
 
 func applyMigration(
+	ctx context.Context,
 	db *sql.DB,
 	migration *Migration,
 ) (err error) {
@@ -103,20 +110,20 @@ func applyMigration(
 		if err != nil {
 			err = errors.WithMessagef(err, "migration#%s failed", migration.ID)
 
-			_, _ = db.Exec(`DELETE FROM migrations WHERE id = ?`, migration.ID)
+			_, _ = db.ExecContext(ctx, `DELETE FROM migrations WHERE id = ?`, migration.ID)
 
 			if migration.Rollback != nil {
-				_ = migration.Rollback(db)
+				_ = migration.Rollback(ctx, db)
 			}
 		}
 	}()
 
-	err = migration.Migrate(db)
+	err = migration.Migrate(ctx, db)
 	if err != nil {
 		return errors.WithStack(err)
 	}
 
-	_, err = db.Exec(`INSERT INTO migrations (id) VALUES (?)`, migration.ID)
+	_, err = db.ExecContext(ctx, `INSERT INTO migrations (id) VALUES (?)`, migration.ID)
 	if err != nil {
 		return errors.WithStack(err)
 	}

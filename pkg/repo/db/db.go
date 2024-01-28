@@ -1,17 +1,20 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql" // for MySQL driver.
 	"github.com/pkg/errors"
+	"github.com/uptrace/opentelemetry-go-extra/otelsql"
 )
 
 func OpenMySQL(
+	ctx context.Context,
 	dsn string,
 ) (*sql.DB, error) {
-	res, err := sql.Open("mysql", dsn)
+	res, err := otelsql.Open("mysql", dsn)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
@@ -21,7 +24,7 @@ func OpenMySQL(
 	res.SetConnMaxIdleTime(time.Minute)
 	res.SetConnMaxLifetime(time.Minute * 5)
 
-	err = res.Ping()
+	err = res.PingContext(ctx)
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}

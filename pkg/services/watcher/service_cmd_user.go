@@ -12,6 +12,7 @@ import (
 )
 
 func (s *Service) cmdUserStats(
+	ctx context.Context,
 	_ *discordgo.InteractionCreate,
 	data *discord.CommandData,
 ) (*discord.Response, error) {
@@ -20,9 +21,9 @@ func (s *Service) cmdUserStats(
 		Region:   models.Region(data.String("server")),
 	}
 
-	user, err := s.domain.UserStats(context.TODO(), &request)
+	user, err := s.domain.UserStats(ctx, &request)
 	if err != nil {
-		telemetry.RecordErrorBackground(err)
+		telemetry.RecordError(ctx, err)
 	}
 
 	if user == nil {

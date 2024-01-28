@@ -19,3 +19,13 @@ func (r *Response) WebHookEdit() *discordgo.WebhookEdit {
 		AllowedMentions: &r.AllowedMentions,
 	}
 }
+
+func (r *Response) MessageSend() *discordgo.MessageSend {
+	return &discordgo.MessageSend{
+		Content:         r.Content,
+		Components:      r.Components,
+		Embeds:          r.Embeds,
+		Files:           r.Files,
+		AllowedMentions: &r.AllowedMentions,
+	}
+}
