@@ -24,7 +24,7 @@ func (s *Service) onInteractionCreate(
 	ctx, span := s.tracer.Start(
 		context.Background(),
 		"cmd:"+data.RequestName(),
-		trace.WithSpanKind(trace.SpanKindClient),
+		trace.WithSpanKind(trace.SpanKindServer),
 	)
 	defer span.End()
 
@@ -40,8 +40,12 @@ func (s *Service) onInteractionCreate(
 		switch {
 		case errors.Is(err, models.ErrNoAccess):
 			resp = s.getNoAccessResponse()
+
+			telemetry.RecordError(ctx, err)
 		case errors.Is(err, models.ErrNotFound):
 			resp = s.getNotFoundResponse()
+
+			telemetry.RecordError(ctx, err)
 		default:
 			telemetry.RecordErrorFail(ctx, err)
 		}

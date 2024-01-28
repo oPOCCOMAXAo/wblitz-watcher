@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"context"
 	"net/http"
 	"time"
 
@@ -27,6 +28,7 @@ type Service struct {
 type Config struct {
 	ApplicationID string `env:"APPLICATION_ID,required"`
 	BotToken      string `env:"BOT_TOKEN,required"`
+	StageChannel  string `env:"STAGE_CHANNEL"`
 }
 
 func New(
@@ -84,9 +86,23 @@ func (s *Service) init() error {
 		Handler:   s.cmdPing,
 		IsPrivate: true,
 	})
+	s.RegisterCommand(CommandParams{
+		Name:      "help",
+		Handler:   s.cmdHelp,
+		IsPrivate: false,
+	})
 
 	s.session.AddHandler(s.onReady)
 	s.session.AddHandler(s.onInteractionCreate)
 
 	return nil
+}
+
+func (s *Service) requestOptions(
+	ctx context.Context,
+) []discordgo.RequestOption {
+	return []discordgo.RequestOption{
+		discordgo.WithClient(s.client),
+		discordgo.WithContext(ctx),
+	}
 }

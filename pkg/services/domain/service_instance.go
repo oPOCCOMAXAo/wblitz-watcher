@@ -27,6 +27,16 @@ func (s *Service) EnsureInstance(
 		return nil
 	}
 
+	if record.ChannelID == "" {
+		record.ChannelID = instance.ChannelID
+
+		err = s.repo.UpdateInstance(ctx, record)
+		if err != nil {
+			//nolint:wrapcheck
+			return err
+		}
+	}
+
 	instance.ID = record.ID
 
 	return nil

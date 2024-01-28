@@ -11,23 +11,35 @@ func (s *Service) getWotbServerOption() *discordgo.ApplicationCommandOption {
 		Type:        discordgo.ApplicationCommandOptionString,
 		Name:        "server",
 		Description: "WotBlitz server",
-		Required:    true,
+		DescriptionLocalizations: map[discordgo.Locale]string{
+			"uk": "Сервер WotBlitz",
+			"ru": "Сервер WotBlitz",
+		},
+		Required: true,
 		Choices: []*discordgo.ApplicationCommandOptionChoice{
 			{
-				Name:  "EU",
+				Name:  "EU - Europe",
 				Value: models.RegionEU,
+				NameLocalizations: map[discordgo.Locale]string{
+					"uk": "EU - Європа",
+					"ru": "EU - Европа",
+				},
 			},
 			{
-				Name:  "NA",
+				Name:  "NA - North America",
 				Value: models.RegionNA,
+				NameLocalizations: map[discordgo.Locale]string{
+					"uk": "NA - Північна Америка",
+					"ru": "NA - Северная Америка",
+				},
 			},
 			{
-				Name:  "ASIA",
+				Name:  "ASIA - Asia",
 				Value: models.RegionAsia,
-			},
-			{
-				Name:  "RU - unsupported now",
-				Value: models.RegionRU,
+				NameLocalizations: map[discordgo.Locale]string{
+					"uk": "ASIA - Азія",
+					"ru": "ASIA - Азия",
+				},
 			},
 		},
 	}
@@ -38,7 +50,11 @@ func (s *Service) getUsernameOption() *discordgo.ApplicationCommandOption {
 		Type:        discordgo.ApplicationCommandOptionString,
 		Name:        "username",
 		Description: "WotBlitz username",
-		Required:    true,
+		DescriptionLocalizations: map[discordgo.Locale]string{
+			"uk": "Ім'я користувача WotBlitz",
+			"ru": "Имя пользователя WotBlitz",
+		},
+		Required: true,
 	}
 }
 
@@ -47,7 +63,11 @@ func (s *Service) getClanOption() *discordgo.ApplicationCommandOption {
 		Type:        discordgo.ApplicationCommandOptionString,
 		Name:        "clan",
 		Description: "Clan tag",
-		Required:    true,
+		DescriptionLocalizations: map[discordgo.Locale]string{
+			"uk": "Тег клану",
+			"ru": "Тег клана",
+		},
+		Required: true,
 	}
 }
 
@@ -56,11 +76,19 @@ func (s *Service) getNotificationTypeOption() *discordgo.ApplicationCommandOptio
 		Type:        discordgo.ApplicationCommandOptionString,
 		Name:        "type",
 		Description: "Notification type",
-		Required:    true,
+		DescriptionLocalizations: map[discordgo.Locale]string{
+			"uk": "Тип сповіщень",
+			"ru": "Тип уведомлений",
+		},
+		Required: true,
 		Choices: []*discordgo.ApplicationCommandOptionChoice{
 			{
 				Name:  "Clan notifications",
 				Value: "clan",
+				NameLocalizations: map[discordgo.Locale]string{
+					"uk": "Сповіщення клану",
+					"ru": "Уведомления клана",
+				},
 			},
 		},
 	}

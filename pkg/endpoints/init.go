@@ -4,7 +4,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/samber/do"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/endpoints/discord"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/endpoints/server"
 )
 
@@ -18,7 +17,6 @@ func Init(
 		router,
 		injector,
 		server.Init,
-		discord.Init,
 	)
 }
 

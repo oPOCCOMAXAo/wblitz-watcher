@@ -17,9 +17,10 @@ func (s *Service) cmdClanAdd(
 	data *discord.CommandData,
 ) (*discord.Response, error) {
 	request := domain.ClanAddRequest{
-		ServerID: event.GuildID,
-		ClanTag:  data.String("clan"),
-		Region:   models.Region(data.String("server")),
+		ServerID:  event.GuildID,
+		ChannelID: event.ChannelID,
+		ClanTag:   data.String("clan"),
+		Region:    models.Region(data.String("server")),
 	}
 
 	clan, err := s.domain.ClanAdd(ctx, &request)

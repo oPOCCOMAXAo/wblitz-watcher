@@ -34,9 +34,10 @@ func (s *Service) EnsureSubscriptionClan(
 }
 
 type ClanAddRequest struct {
-	ServerID string
-	ClanTag  string
-	Region   models.Region
+	ServerID  string
+	ChannelID string
+	ClanTag   string
+	Region    models.Region
 }
 
 func (s *Service) ClanAdd(
@@ -45,7 +46,7 @@ func (s *Service) ClanAdd(
 ) (*models.WGClan, error) {
 	instance := &models.BotInstance{
 		ServerID:  request.ServerID,
-		ChannelID: "",
+		ChannelID: request.ChannelID,
 		Type:      models.STClan,
 	}
 

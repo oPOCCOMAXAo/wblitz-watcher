@@ -42,3 +42,40 @@ func (s *Service) cmdPing(
 		Content: "Pong!",
 	}, nil
 }
+
+func (s *Service) getServerCommands(
+	ctx context.Context,
+	guildID string,
+) ([]*discordgo.ApplicationCommand, error) {
+	//nolint:wrapcheck
+	return s.session.ApplicationCommands(
+		s.config.ApplicationID,
+		guildID,
+		s.requestOptions(ctx)...,
+	)
+}
+
+func (s *Service) parseCommandIDs(
+	cmds []*discordgo.ApplicationCommand,
+) map[CommandFullName]string {
+	res := map[CommandFullName]string{}
+
+	for _, cmd := range cmds {
+		res[CommandFullName{Name: cmd.Name}] = cmd.ID
+
+		for _, opt := range cmd.Options {
+			if opt.Type != discordgo.ApplicationCommandOptionSubCommand {
+				continue
+			}
+
+			id := CommandFullName{
+				Name:    cmd.Name,
+				SubName: opt.Name,
+			}
+
+			res[id] = cmd.ID
+		}
+	}
+
+	return res
+}
