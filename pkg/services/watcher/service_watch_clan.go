@@ -51,6 +51,15 @@ func (s *Service) taskWatchClan(
 	}
 
 	for _, apiClan := range allClansMembers {
+		if !apiClan.IsFound {
+			telemetry.RecordErrorFail(
+				ctx,
+				errors.WithMessagef(models.ErrFlowBroken, "%s was not found", apiClan.EntityUniqueID()),
+			)
+
+			continue
+		}
+
 		dbClan := dbClanByID[apiClan.ID]
 		if dbClan == nil {
 			telemetry.RecordErrorFail(
@@ -81,10 +90,6 @@ func (s *Service) taskWatchClan(
 			Created: lo.Map(idDiff.Created, apiClan.ID.MapMember),
 			Updated: lo.Map(idDiff.Updated, apiClan.ID.MapMember),
 			Deleted: lo.Map(idDiff.Deleted, apiClan.ID.MapMember),
-		}
-
-		if memDiff.IsEmpty() {
-			continue
 		}
 
 		if s.isClanMembersInitialized(dbClan.Clan) {

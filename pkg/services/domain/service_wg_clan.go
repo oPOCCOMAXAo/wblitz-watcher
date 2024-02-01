@@ -81,6 +81,7 @@ func (s *Service) GetClanMembersFromWG(
 		res[i] = &models.WGClanMembers{
 			ID:         clanID,
 			MembersIDs: []int64{},
+			IsFound:    false,
 		}
 
 		byClanID[clanID] = res[i]
@@ -103,6 +104,7 @@ func (s *Service) GetClanMembersFromWG(
 			}
 
 			members.MembersIDs = clanInfo.MembersIDs
+			members.IsFound = true
 		}
 	}
 

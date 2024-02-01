@@ -18,6 +18,7 @@ func (m *WGClanMember) GetFullClanID() WGClanID {
 type WGClanMembers struct {
 	ID         WGClanID
 	MembersIDs []int64
+	IsFound    bool // api sometimes returns null instead of object. this flag is for that case.
 }
 
 func (c *WGClanMembers) EntityUniqueID() string {
