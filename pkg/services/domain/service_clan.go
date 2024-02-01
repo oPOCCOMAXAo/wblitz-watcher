@@ -137,8 +137,9 @@ func (s *Service) ClanRemove(
 		Region:     request.Region,
 	}
 
-	err = s.EnsureSubscriptionClan(ctx, subscription)
+	err = s.repo.DeleteSubscriptionClan(ctx, subscription)
 	if err != nil {
+		//nolint:wrapcheck
 		return &res, err
 	}
 
