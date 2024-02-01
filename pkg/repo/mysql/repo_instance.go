@@ -126,3 +126,54 @@ WHERE id = ?`,
 
 	return nil
 }
+
+func (r *Repository) GetInstancesByType(
+	ctx context.Context,
+	value models.SubscriptionType,
+) ([]*models.BotInstance, error) {
+	stmt, err := r.db.PrepareContext(ctx,
+		`SELECT id, server_id, channel_id, type
+FROM bot_instance
+WHERE type = ?`,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx,
+		value,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer rows.Close()
+
+	var res []*models.BotInstance
+
+	for rows.Next() {
+		var item models.BotInstance
+
+		err = rows.
+			Scan(
+				&item.ID,
+				&item.ServerID,
+				&item.ChannelID,
+				&item.Type,
+			)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		res = append(res, &item)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return res, nil
+}

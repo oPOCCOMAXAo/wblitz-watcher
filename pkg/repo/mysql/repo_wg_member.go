@@ -14,7 +14,6 @@ func (r *Repository) CreateUpdateWGClanMembers(
 		return nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	sql := `INSERT INTO wg_clan_member (region, clan_id, account_id) VALUES ` +
 		r.placeholdersGroup(len(values), 3) +
 		` ON DUPLICATE KEY UPDATE region = VALUES(region), clan_id = VALUES(clan_id)`
@@ -49,7 +48,6 @@ func (r *Repository) DeleteWGClanMembers(
 		return nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	sql := `DELETE FROM wg_clan_member WHERE (region, clan_id, account_id) IN (` +
 		r.placeholdersGroup(len(values), 3) +
 		`)`
@@ -85,7 +83,6 @@ func (r *Repository) GetWGClanMembers(
 		return nil, nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	sql := `SELECT region, clan_id, account_id FROM wg_clan_member WHERE (clan_id, region) IN (` +
 		r.placeholdersGroup(len(ids), 2) +
 		`)`

@@ -90,6 +90,11 @@ func (s *Service) Serve(
 
 	go s.serveTasks(ctx, cancel)
 
+	err := s.execInitialTasks(ctx)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 

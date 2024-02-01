@@ -10,6 +10,8 @@ import (
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
+//nolint:nolintlint // for next line.
+//nolint:contextcheck // false positive.
 func Provide(
 	i *do.Injector,
 	config Config,

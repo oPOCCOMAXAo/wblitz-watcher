@@ -18,7 +18,6 @@ func (r *Repository) CreateEventClan(
 		return nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	stmt, err := r.db.PrepareContext(ctx,
 		`INSERT INTO event_clan (time, type, region, clan_id, account_id)
 VALUES `+r.placeholdersGroup(len(values), 5),
@@ -60,7 +59,6 @@ func (r *Repository) DeleteEventClansByID(
 		return nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	sql := `DELETE FROM event_clan WHERE id IN (` + r.placeholders(len(ids)) + `)`
 
 	stmt, err := r.db.PrepareContext(ctx, sql)

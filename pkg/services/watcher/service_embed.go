@@ -71,6 +71,7 @@ func (s *Service) embedClan(
 
 func (s *Service) embedClanList(
 	clans []*models.WGClan,
+	isDisabled bool,
 ) []*discordgo.MessageEmbed {
 	const maxEmbedFields = 25
 
@@ -81,6 +82,12 @@ func (s *Service) embedClanList(
 			Fields: make([]*discordgo.MessageEmbedField, len(group)),
 		}
 		res = append(res, embed)
+
+		if isDisabled {
+			embed.Color = int(ColorDisabled)
+		} else {
+			embed.Color = int(ColorEnabled)
+		}
 
 		for i, clan := range group {
 			embed.Fields[i] = &discordgo.MessageEmbedField{
@@ -99,28 +106,22 @@ func (s *Service) embedClanEvent(
 	user *wg.AccountInfo,
 ) *discordgo.MessageEmbed {
 	embed := &discordgo.MessageEmbed{
+		Title:     clan.StatName(),
 		Type:      discordgo.EmbedTypeRich,
 		Timestamp: time.Unix(event.Time, 0).Format(time.RFC3339),
 		Fields:    []*discordgo.MessageEmbedField{},
+		Footer: &discordgo.MessageEmbedFooter{
+			Text: clan.Region.Pretty(),
+		},
 	}
 
 	switch event.Type {
 	case models.ETCEnter:
 		embed.Color = int(ColorEnter)
-		embed.Description = MessageEnter
+		embed.Description = fmt.Sprintf("**%s** %s", user.Nickname, MessageEnter)
 	case models.ETCLeave:
 		embed.Color = int(ColorLeave)
-		embed.Description = MessageLeave
-	}
-
-	embed.Fields = append(embed.Fields, &discordgo.MessageEmbedField{
-		Name:   "Clan",
-		Value:  clan.StatName(),
-		Inline: false,
-	})
-
-	embed.Author = &discordgo.MessageEmbedAuthor{
-		Name: user.AuthorName(),
+		embed.Description = fmt.Sprintf("**%s** %s", user.Nickname, MessageLeave)
 	}
 
 	embed.Fields = append(embed.Fields,

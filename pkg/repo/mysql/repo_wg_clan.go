@@ -97,7 +97,6 @@ func (r *Repository) UpdateWGClansMembersUpdatedAt(
 		return nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	sql := `UPDATE wg_clan
 SET members_updated_at = ?
 WHERE (id, region) IN (` + r.placeholdersGroup(len(ids), 2) + `)`
@@ -184,7 +183,7 @@ func (r *Repository) GetWGClansWithSubscriptions(
 	stmt, err := r.db.PrepareContext(ctx,
 		`SELECT wc.id, wc.region, wc.tag, wc.name, wc.updated_at, wc.members_updated_at
 FROM wg_clan wc
-JOIN subscription_clan sc ON sc.clan_id = wc.id AND sc.region = wc.region
+JOIN subscription_clan sc ON sc.clan_id = wc.id AND sc.region = wc.region AND sc.is_disabled = 0
 GROUP BY wc.id, wc.region`,
 	)
 	if err != nil {

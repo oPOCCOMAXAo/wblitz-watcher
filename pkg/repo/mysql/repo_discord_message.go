@@ -64,7 +64,6 @@ func (r *Repository) UpdateDiscordMessagesProcessed(
 		return nil
 	}
 
-	//nolint:gosec // here placeholders are safe.
 	stmt, err := r.db.PrepareContext(ctx, `UPDATE discord_message
 SET is_processed = 1
 WHERE id IN (`+r.placeholders(len(ids))+`)`)

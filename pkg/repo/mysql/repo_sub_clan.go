@@ -54,7 +54,7 @@ func (r *Repository) GetSubscriptionClan(
 	value *models.SubscriptionClan,
 ) (*models.SubscriptionClan, error) {
 	stmt, err := r.db.PrepareContext(ctx,
-		`SELECT id, instance_id, clan_id, region
+		`SELECT id, instance_id, clan_id, region, is_disabled
 FROM subscription_clan
 WHERE instance_id = ? AND clan_id = ? AND region = ?`,
 	)
@@ -83,6 +83,7 @@ WHERE instance_id = ? AND clan_id = ? AND region = ?`,
 			&res.InstanceID,
 			&res.ClanID,
 			&res.Region,
+			&res.IsDisabled,
 		)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -105,7 +106,7 @@ func (r *Repository) UpdateSubscriptionClan(
 
 	stmt, err := r.db.PrepareContext(ctx,
 		`UPDATE subscription_clan
-SET instance_id = ?, clan_id = ?, region = ?, updated_at = ?
+SET instance_id = ?, clan_id = ?, region = ?, updated_at = ?, is_disabled = ?
 WHERE id = ?`,
 	)
 	if err != nil {
@@ -121,6 +122,7 @@ WHERE id = ?`,
 		value.ClanID,
 		value.Region,
 		now,
+		value.IsDisabled,
 		value.ID,
 	)
 
@@ -150,6 +152,92 @@ WHERE instance_id = ? AND clan_id = ? AND region = ?`,
 		value.ClanID,
 		value.Region,
 	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) GetSubscriptionClanListByInstance(
+	ctx context.Context,
+	instanceID int64,
+) ([]*models.SubscriptionClan, error) {
+	stmt, err := r.db.PrepareContext(ctx,
+		`SELECT id, instance_id, clan_id, region, is_disabled
+FROM subscription_clan
+WHERE instance_id = ?
+ORDER BY id ASC`,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx, instanceID)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer rows.Close()
+
+	var res []*models.SubscriptionClan
+
+	for rows.Next() {
+		var item models.SubscriptionClan
+
+		err = rows.Scan(
+			&item.ID,
+			&item.InstanceID,
+			&item.ClanID,
+			&item.Region,
+			&item.IsDisabled,
+		)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		res = append(res, &item)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return res, nil
+}
+
+func (r *Repository) UpdateIsDisabledSubscriptionClanByID(
+	ctx context.Context,
+	isDisabled bool,
+	ids []int64,
+) error {
+	if len(ids) == 0 {
+		return nil
+	}
+
+	stmt, err := r.db.PrepareContext(ctx,
+		`UPDATE subscription_clan
+SET is_disabled = ?
+WHERE id IN (`+r.placeholders(len(ids))+`)`,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	args := make([]any, 0, len(ids)+1)
+
+	args = append(args, isDisabled)
+
+	for _, id := range ids {
+		args = append(args, id)
+	}
+
+	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
 		return errors.WithStack(err)
 	}

@@ -5,4 +5,5 @@ type SubscriptionClan struct {
 	InstanceID int64
 	ClanID     int64
 	Region     Region
+	IsDisabled bool
 }

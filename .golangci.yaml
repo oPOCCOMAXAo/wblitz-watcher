@@ -40,6 +40,9 @@ linters-settings:
       - (*github.com/gin-gonic/gin.Error).SetType
       - (*github.com/gin-gonic/gin.Context).AbortWithError
       - (*github.com/gin-gonic/gin.Context).Error
+  gosec:
+    excludes:
+      - G202 # SQL query construction using placeholders
 
 linters:
   disable-all: true

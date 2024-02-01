@@ -69,7 +69,7 @@ func (c *ClanInfo) WGClanID() models.WGClanID {
 }
 
 func (c *ClanInfo) StatName() string {
-	return fmt.Sprintf("[**%s**] %s / %s", c.Tag, c.Region.Pretty(), c.Name)
+	return fmt.Sprintf("[%s] %s", c.Tag, c.Name)
 }
 
 type StatisticsEntry struct {

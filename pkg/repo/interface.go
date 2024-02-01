@@ -22,6 +22,7 @@ type Instance interface {
 	CreateInstance(context.Context, *models.BotInstance) error
 	GetInstance(context.Context, *models.BotInstance) (*models.BotInstance, error)
 	UpdateInstance(context.Context, *models.BotInstance) error
+	GetInstancesByType(context.Context, models.SubscriptionType) ([]*models.BotInstance, error)
 }
 
 type SubscriptionClan interface {
@@ -29,6 +30,12 @@ type SubscriptionClan interface {
 	GetSubscriptionClan(context.Context, *models.SubscriptionClan) (*models.SubscriptionClan, error)
 	UpdateSubscriptionClan(context.Context, *models.SubscriptionClan) error
 	DeleteSubscriptionClan(context.Context, *models.SubscriptionClan) error
+	GetSubscriptionClanListByInstance(context.Context, int64) ([]*models.SubscriptionClan, error)
+	UpdateIsDisabledSubscriptionClanByID(
+		_ context.Context,
+		isDisabled bool,
+		ids []int64,
+	) error
 }
 
 type WGClan interface {

@@ -2,7 +2,6 @@ package discord
 
 import (
 	"context"
-	"log"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -61,11 +60,6 @@ func (s *Service) onReady(
 		if err != nil {
 			telemetry.RecordError(ctx, err)
 		}
-	}
-
-	err := s.initStage(ctx)
-	if err != nil {
-		telemetry.RecordError(ctx, err)
 	}
 }
 
@@ -189,28 +183,4 @@ func (s *Service) getCommands() []*discordgo.ApplicationCommand {
 			},
 		},
 	}
-}
-
-func (s *Service) initStage(
-	ctx context.Context,
-) error {
-	if s.config.StageChannel == "" {
-		return nil
-	}
-
-	res, err := s.session.StageInstanceCreate(
-		&discordgo.StageInstanceParams{
-			Topic:     "Test",
-			ChannelID: s.config.StageChannel,
-		},
-		s.requestOptions(ctx)...,
-	)
-	if err != nil {
-		//nolint:wrapcheck
-		return err
-	}
-
-	log.Printf("%+v", res)
-
-	return nil
 }

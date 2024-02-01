@@ -82,7 +82,17 @@ func (s *Service) ClanAdd(
 		Region:     request.Region,
 	}
 
-	return &res, s.EnsureSubscriptionClan(ctx, subscription)
+	err = s.EnsureSubscriptionClan(ctx, subscription)
+	if err != nil {
+		return &res, err
+	}
+
+	err = s.ActivateSubscriptionClansForInstance(ctx, instance)
+	if err != nil {
+		return &res, err
+	}
+
+	return &res, nil
 }
 
 func (s *Service) ClanRemove(
@@ -132,6 +142,11 @@ func (s *Service) ClanRemove(
 		return &res, err
 	}
 
+	err = s.ActivateSubscriptionClansForInstance(ctx, instance)
+	if err != nil {
+		return &res, err
+	}
+
 	return &res, nil
 }
 
@@ -139,10 +154,16 @@ type ClanListRequest struct {
 	ServerID string
 }
 
+type ClanListResponse struct {
+	ClansEnabled  []*models.WGClan
+	ClansDisabled []*models.WGClan
+	Limit         int64
+}
+
 func (s *Service) ClanList(
 	ctx context.Context,
 	request *ClanListRequest,
-) ([]*models.WGClan, error) {
+) (*ClanListResponse, error) {
 	instance := &models.BotInstance{
 		ServerID:  request.ServerID,
 		ChannelID: "",
@@ -155,11 +176,37 @@ func (s *Service) ClanList(
 		return nil, err
 	}
 
+	subs, err := s.repo.GetSubscriptionClanListByInstance(ctx, instance.ID)
+	if err != nil {
+		//nolint:wrapcheck
+		return nil, err
+	}
+
+	disabledByID := make(map[int64]bool, len(subs))
+	for _, sub := range subs {
+		disabledByID[sub.ClanID] = sub.IsDisabled
+	}
+
 	clans, err := s.repo.GetWGClanListByInstance(ctx, instance.ID)
 	if err != nil {
 		//nolint:wrapcheck
 		return nil, err
 	}
 
-	return clans, nil
+	var res ClanListResponse
+
+	res.Limit, err = s.GetSubscriptionClanLimitForServer(ctx, instance.ServerID)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, clan := range clans {
+		if disabledByID[clan.ID] {
+			res.ClansDisabled = append(res.ClansDisabled, clan)
+		} else {
+			res.ClansEnabled = append(res.ClansEnabled, clan)
+		}
+	}
+
+	return &res, nil
 }

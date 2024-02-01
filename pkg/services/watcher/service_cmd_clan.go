@@ -2,6 +2,7 @@ package watcher
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -90,11 +91,17 @@ func (s *Service) cmdClanList(
 
 		telemetry.RecordError(ctx, err)
 	} else {
-		res.Content = "Clans"
+		res.Content = fmt.Sprintf("Clans\n\nCurrent limit: `%d`", clans.Limit)
 	}
 
 	if clans != nil {
-		res.Embeds = append(res.Embeds, s.embedClanList(clans)...)
+		if len(clans.ClansEnabled) > 0 {
+			res.Embeds = append(res.Embeds, s.embedClanList(clans.ClansEnabled, false)...)
+		}
+
+		if len(clans.ClansDisabled) > 0 {
+			res.Embeds = append(res.Embeds, s.embedClanList(clans.ClansDisabled, true)...)
+		}
 	}
 
 	return &res, nil

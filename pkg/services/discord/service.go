@@ -16,6 +16,7 @@ import (
 
 type Service struct {
 	config       Config
+	isProd       bool
 	tracer       trace.Tracer
 	client       *http.Client
 	session      *discordgo.Session
@@ -23,20 +24,23 @@ type Service struct {
 	handlers     map[CommandFullName]CommandHandler
 	isRestricted map[CommandFullName]bool
 	isPrivate    map[CommandFullName]bool
+	isTest       map[string]bool
 }
 
 type Config struct {
-	ApplicationID string `env:"APPLICATION_ID,required"`
-	BotToken      string `env:"BOT_TOKEN,required"`
-	StageChannel  string `env:"STAGE_CHANNEL"`
+	ApplicationID string   `env:"APPLICATION_ID,required"`
+	BotToken      string   `env:"BOT_TOKEN,required"`
+	TestChannels  []string `env:"TEST_CHANNELS"`
 }
 
 func New(
 	config Config,
+	env models.Environment,
 	telemetry *telemetry.Service,
 ) (*Service, error) {
 	res := Service{
 		config: config,
+		isProd: env.IsProduction(),
 		tracer: telemetry.PackageTracer("discord"),
 		client: &http.Client{
 			Timeout:   30 * time.Second,
@@ -81,6 +85,12 @@ func (s *Service) init() error {
 	s.handlers = map[CommandFullName]CommandHandler{}
 	s.isRestricted = map[CommandFullName]bool{}
 	s.isPrivate = map[CommandFullName]bool{}
+
+	s.isTest = map[string]bool{}
+	for _, channelID := range s.config.TestChannels {
+		s.isTest[channelID] = true
+	}
+
 	s.RegisterCommand(CommandParams{
 		Name:      "ping",
 		Handler:   s.cmdPing,

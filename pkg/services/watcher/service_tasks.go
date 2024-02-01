@@ -35,3 +35,13 @@ func (s *Service) execTaskSingle(
 		cancel(err)
 	}
 }
+
+func (s *Service) execInitialTasks(ctx context.Context) error {
+	err := s.domain.UpdateAllSubscriptionClanActivation(ctx)
+	if err != nil {
+		//nolint:wrapcheck
+		return err
+	}
+
+	return nil
+}

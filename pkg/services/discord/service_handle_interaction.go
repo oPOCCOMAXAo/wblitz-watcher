@@ -19,6 +19,13 @@ func (s *Service) onInteractionCreate(
 	event *discordgo.InteractionCreate,
 ) {
 	data := s.parseInteractionData(event)
+
+	if s.isEventIgnored(event, data) {
+		log.Printf("ignored: %s\n", data.Name)
+
+		return
+	}
+
 	log.Printf("%s\n", data.Name)
 
 	ctx, span := s.tracer.Start(
@@ -119,6 +126,7 @@ func (s *Service) parseInteractionData(
 	res := CommandData{
 		Name:    []string{data.Name},
 		Options: map[string]any{},
+		IsTest:  s.isTest[event.ChannelID],
 	}
 
 	for _, opt := range data.Options {

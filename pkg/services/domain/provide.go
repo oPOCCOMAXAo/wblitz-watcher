@@ -5,6 +5,7 @@ import (
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/repo"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/discord"
 )
 
 func Provide(
@@ -23,9 +24,16 @@ func Provide(
 			return nil, err
 		}
 
+		discord, err := discord.Invoke(i)
+		if err != nil {
+			//nolint:wrapcheck
+			return nil, err
+		}
+
 		return NewService(
 			repo,
 			wg,
+			discord,
 		), nil
 	})
 }
