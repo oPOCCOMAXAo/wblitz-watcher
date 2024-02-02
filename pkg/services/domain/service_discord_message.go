@@ -9,20 +9,26 @@ import (
 
 func (s *Service) CreateDiscordMessagesForEventClan(
 	ctx context.Context,
-) error {
-	err := s.repo.CreateDiscordMessagesFromEventClan(ctx)
+) (int64, error) {
+	var res int64
+
+	total, err := s.repo.CreateDiscordMessagesFromEventClan(ctx)
 	if err != nil {
 		//nolint:wrapcheck
-		return err
+		return 0, err
 	}
 
-	err = s.repo.UpdateEventClanProcessed(ctx)
+	res += total
+
+	total, err = s.repo.UpdateEventClanProcessed(ctx)
 	if err != nil {
 		//nolint:wrapcheck
-		return err
+		return 0, err
 	}
 
-	return nil
+	res += total
+
+	return res, nil
 }
 
 type DiscordMessageData struct {

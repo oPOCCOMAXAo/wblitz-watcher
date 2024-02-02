@@ -10,7 +10,7 @@ import (
 func (s *Service) CreateEventClanByMembersDiff(
 	ctx context.Context,
 	values *diff.Diff[*models.WGClanMember],
-) error {
+) (int64, error) {
 	events := make([]*models.EventClan, 0, len(values.Created)+len(values.Deleted))
 
 	for _, value := range values.Created {
@@ -34,8 +34,8 @@ func (s *Service) CreateEventClanByMembersDiff(
 	err := s.repo.CreateEventClan(ctx, events...)
 	if err != nil {
 		//nolint:wrapcheck
-		return err
+		return 0, err
 	}
 
-	return nil
+	return int64(len(events)), nil
 }

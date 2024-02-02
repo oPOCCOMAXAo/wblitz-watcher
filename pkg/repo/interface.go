@@ -23,6 +23,8 @@ type Instance interface {
 	GetInstance(context.Context, *models.BotInstance) (*models.BotInstance, error)
 	UpdateInstance(context.Context, *models.BotInstance) error
 	GetInstancesByType(context.Context, models.SubscriptionType) ([]*models.BotInstance, error)
+	SoftDeleteInstancesByServer(context.Context, string) error
+	HardDeleteCleanedInstances(context.Context) error
 }
 
 type SubscriptionClan interface {
@@ -36,6 +38,7 @@ type SubscriptionClan interface {
 		isDisabled bool,
 		ids []int64,
 	) error
+	DeleteSubscriptionClansForDeletedInstances(context.Context) error
 }
 
 type WGClan interface {
@@ -55,12 +58,14 @@ type WGClanMember interface {
 type EventClan interface {
 	CreateEventClan(context.Context, ...*models.EventClan) error
 	GetEventClanByID(context.Context, int64) (*models.EventClan, error)
-	UpdateEventClanProcessed(context.Context) error
+	UpdateEventClanProcessed(context.Context) (int64, error)
 	DeleteEventClansByID(context.Context, []int64) error
 }
 
 type DiscordMessage interface {
-	CreateDiscordMessagesFromEventClan(context.Context) error
+	CreateDiscordMessagesFromEventClan(context.Context) (int64, error)
 	GetFirstUnsentDiscordMessage(context.Context) (*models.DiscordMessage, error)
 	UpdateDiscordMessagesProcessed(context.Context, []int64) error
+	DeleteDiscordMessagesForDeletedInstances(context.Context) error
+	DeleteProcessedDiscordMessages(context.Context) error
 }

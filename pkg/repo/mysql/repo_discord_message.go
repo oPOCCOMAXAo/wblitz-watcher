@@ -15,13 +15,18 @@ var sqlCreateDiscordMessagesFromEventClan string
 
 func (r *Repository) CreateDiscordMessagesFromEventClan(
 	ctx context.Context,
-) error {
-	_, err := r.db.ExecContext(ctx, sqlCreateDiscordMessagesFromEventClan)
+) (int64, error) {
+	res, err := r.db.ExecContext(ctx, sqlCreateDiscordMessagesFromEventClan)
 	if err != nil {
-		return errors.WithStack(err)
+		return 0, errors.WithStack(err)
 	}
 
-	return nil
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+
+	return rows, nil
 }
 
 //go:embed sql/get_first_unsent_dm.sql
@@ -79,6 +84,34 @@ WHERE id IN (`+r.placeholders(len(ids))+`)`)
 	}
 
 	_, err = stmt.ExecContext(ctx, args...)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) DeleteDiscordMessagesForDeletedInstances(
+	ctx context.Context,
+) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM discord_message
+WHERE bot_instance_id IN (
+	SELECT id
+	FROM bot_instance
+	WHERE deleted_at != 0
+)`)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) DeleteProcessedDiscordMessages(
+	ctx context.Context,
+) error {
+	_, err := r.db.ExecContext(ctx, `DELETE FROM discord_message
+WHERE is_processed = 1`)
 	if err != nil {
 		return errors.WithStack(err)
 	}

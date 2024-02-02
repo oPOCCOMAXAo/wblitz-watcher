@@ -35,6 +35,13 @@ func (s *Service) taskWatchClan(
 		return err
 	}
 
+	notifyRequired := false
+	defer func() {
+		if notifyRequired {
+			s.notifyTaskProcessEvents()
+		}
+	}()
+
 	dbClanByID := make(map[models.WGClanID]*models.WGClanExtended, len(clans))
 	ids := make([]models.WGClanID, len(clans))
 
@@ -93,13 +100,15 @@ func (s *Service) taskWatchClan(
 		}
 
 		if s.isClanMembersInitialized(dbClan.Clan) {
-			err = s.domain.CreateEventClanByMembersDiff(ctx, &memDiff)
+			total, err := s.domain.CreateEventClanByMembersDiff(ctx, &memDiff)
 			if err != nil {
 				//nolint:wrapcheck
 				return err
 			}
 
-			s.notifyTaskProcessEvents()
+			if total > 0 {
+				notifyRequired = true
+			}
 		}
 
 		err = s.domain.UpdateWGClanMembers(ctx, &memDiff)

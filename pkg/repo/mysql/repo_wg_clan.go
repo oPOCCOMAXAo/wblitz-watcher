@@ -144,6 +144,10 @@ ORDER BY sc.id ASC`,
 		instanceID,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, errors.WithStack(err)
 	}
 
@@ -194,6 +198,10 @@ GROUP BY wc.id, wc.region`,
 
 	rows, err := stmt.QueryContext(ctx)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, errors.WithStack(err)
 	}
 

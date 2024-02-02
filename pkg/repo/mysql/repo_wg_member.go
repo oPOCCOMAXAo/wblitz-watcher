@@ -2,6 +2,9 @@ package mysql
 
 import (
 	"context"
+	"database/sql"
+
+	"github.com/pkg/errors"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
@@ -16,12 +19,11 @@ func (r *Repository) CreateUpdateWGClanMembers(
 
 	sql := `INSERT INTO wg_clan_member (region, clan_id, account_id) VALUES ` +
 		r.placeholdersGroup(len(values), 3) +
-		` ON DUPLICATE KEY UPDATE region = VALUES(region), clan_id = VALUES(clan_id)`
+		` ON DUPLICATE KEY UPDATE clan_id = VALUES(clan_id)`
 
 	stmt, err := r.db.PrepareContext(ctx, sql)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	defer stmt.Close()
@@ -33,8 +35,7 @@ func (r *Repository) CreateUpdateWGClanMembers(
 
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -54,8 +55,7 @@ func (r *Repository) DeleteWGClanMembers(
 
 	stmt, err := r.db.PrepareContext(ctx, sql)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	defer stmt.Close()
@@ -67,8 +67,7 @@ func (r *Repository) DeleteWGClanMembers(
 
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -83,14 +82,13 @@ func (r *Repository) GetWGClanMembers(
 		return nil, nil
 	}
 
-	sql := `SELECT region, clan_id, account_id FROM wg_clan_member WHERE (clan_id, region) IN (` +
-		r.placeholdersGroup(len(ids), 2) +
-		`)`
-
-	stmt, err := r.db.PrepareContext(ctx, sql)
+	stmt, err := r.db.PrepareContext(ctx,
+		`SELECT region, clan_id, account_id
+FROM wg_clan_member
+WHERE (clan_id, region) IN (`+r.placeholdersGroup(len(ids), 2)+`)`,
+	)
 	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	defer stmt.Close()
@@ -102,8 +100,11 @@ func (r *Repository) GetWGClanMembers(
 
 	rows, err := stmt.QueryContext(ctx, args...)
 	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, errors.WithStack(err)
 	}
 
 	defer rows.Close()
@@ -123,8 +124,7 @@ func (r *Repository) GetWGClanMembers(
 			&accountID,
 		)
 		if err != nil {
-			//nolint:wrapcheck
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 
 		members, ok := mapByID[id]
@@ -142,8 +142,7 @@ func (r *Repository) GetWGClanMembers(
 
 	err = rows.Err()
 	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return res, nil

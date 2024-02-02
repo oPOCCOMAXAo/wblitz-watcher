@@ -13,6 +13,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 var _ do.Shutdownable = (*Service)(nil)
@@ -82,18 +84,23 @@ func (s *Service) Tracer() trace.Tracer {
 	)
 }
 
-func (s *Service) TracerWithOptions(name string, opts ...trace.TracerOption) trace.Tracer {
-	return s.provider.Tracer(name, opts...)
-}
-
-func (s *Service) PackageTracer(pkgName string) trace.Tracer {
-	return NewTracerWithOptions(s.Tracer(), pkgName, []trace.SpanStartOption{})
+func (s *Service) PackageTracer(pkgName string, opts ...trace.SpanStartOption) trace.Tracer {
+	return NewTracerWithOptions(
+		s.Tracer(),
+		pkgName,
+		append([]trace.SpanStartOption{}, opts...),
+	)
 }
 
 func (s *Service) TaskTracer() trace.Tracer {
-	return NewTracerWithOptions(s.Tracer(), "task", []trace.SpanStartOption{
-		trace.WithSpanKind(trace.SpanKindInternal),
-	})
+	return NewTracerWithOptions(
+		s.Tracer(),
+		"task",
+		[]trace.SpanStartOption{
+			trace.WithSpanKind(trace.SpanKindServer),
+			models.SpanTypeTask.Option(),
+		},
+	)
 }
 
 func (s *Service) Close(ctx context.Context) error {

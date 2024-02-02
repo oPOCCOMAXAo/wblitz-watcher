@@ -152,7 +152,8 @@ func (s *Service) ClanRemove(
 }
 
 type ClanListRequest struct {
-	ServerID string
+	ServerID  string
+	ChannelID string
 }
 
 type ClanListResponse struct {
@@ -167,13 +168,12 @@ func (s *Service) ClanList(
 ) (*ClanListResponse, error) {
 	instance := &models.BotInstance{
 		ServerID:  request.ServerID,
-		ChannelID: "",
+		ChannelID: request.ChannelID,
 		Type:      models.STClan,
 	}
 
-	instance, err := s.repo.GetInstance(ctx, instance)
+	err := s.EnsureInstance(ctx, instance)
 	if err != nil {
-		//nolint:wrapcheck
 		return nil, err
 	}
 

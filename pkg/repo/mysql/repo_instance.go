@@ -146,6 +146,10 @@ WHERE type = ?`,
 		value,
 	)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, errors.WithStack(err)
 	}
 
@@ -176,4 +180,49 @@ WHERE type = ?`,
 	}
 
 	return res, nil
+}
+
+func (r *Repository) SoftDeleteInstancesByServer(
+	ctx context.Context,
+	value string,
+) error {
+	stmt, err := r.db.PrepareContext(ctx,
+		`UPDATE bot_instance
+SET updated_at = ?, deleted_at = ?
+WHERE server_id = ?`,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	now := time.Now().Unix()
+
+	_, err = stmt.ExecContext(ctx,
+		now,
+		now,
+		value,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) HardDeleteCleanedInstances(
+	ctx context.Context,
+) error {
+	// as foreign key is not cascade, we not delete instances with related rows in other tables.
+	_, err := r.db.ExecContext(ctx,
+		`DELETE IGNORE
+FROM bot_instance
+WHERE deleted_at > 0`,
+	)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }

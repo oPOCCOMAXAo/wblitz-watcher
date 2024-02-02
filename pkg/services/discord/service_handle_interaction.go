@@ -28,21 +28,17 @@ func (s *Service) onInteractionCreate(
 
 	log.Printf("%s\n", data.Name)
 
-	ctx, span := s.tracer.Start(
-		context.Background(),
-		"cmd:"+data.RequestName(),
-		trace.WithSpanKind(trace.SpanKindServer),
-	)
+	ctx, span := s.cmdTracer.Start(context.Background(), data.RequestName())
 	defer span.End()
 
-	s.writeTelemetry(span, event, data)
+	s.writeInteractionTelemetry(span, event, data)
 
 	err := s.responseInProgress(event, data)
 	if err != nil {
 		telemetry.RecordErrorFail(ctx, err)
 	}
 
-	resp, err := s.processEvent(ctx, event, data)
+	resp, err := s.processCommand(ctx, event, data)
 	if err != nil {
 		switch {
 		case errors.Is(err, models.ErrNoAccess):
@@ -71,7 +67,7 @@ func (s *Service) onInteractionCreate(
 	}
 }
 
-func (s *Service) writeTelemetry(
+func (s *Service) writeInteractionTelemetry(
 	span trace.Span,
 	event *discordgo.InteractionCreate,
 	data *CommandData,
@@ -89,33 +85,6 @@ func (s *Service) writeTelemetry(
 	}
 
 	span.SetAttributes(attrs...)
-}
-
-func (s *Service) processEvent(
-	ctx context.Context,
-	event *discordgo.InteractionCreate,
-	data *CommandData,
-) (*Response, error) {
-	id := data.ID()
-
-	handler, ok := s.handlers[id]
-	if !ok || handler == nil {
-		return nil, models.ErrNotFound
-	}
-
-	if s.isRestricted[id] {
-		err := s.VerifyAccess(event)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	resp, err := handler(ctx, event, data)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
 }
 
 func (s *Service) parseInteractionData(

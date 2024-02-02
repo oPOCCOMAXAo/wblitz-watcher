@@ -12,54 +12,54 @@ func (s *Service) onReady(
 	_ *discordgo.Session,
 	event *discordgo.Ready,
 ) {
-	ctx, span := s.tracer.Start(context.Background(), "onReady")
+	ctx, span := s.eventTracer.Start(context.Background(), "onReady")
 	defer span.End()
 
-	bulkCmds := s.getCommands()
+	for _, guild := range event.Guilds {
+		s.registerGuildCommands(ctx, guild.ID)
+	}
+}
 
-	names := map[string]bool{}
-	for _, cmd := range bulkCmds {
-		names[cmd.Name] = true
+func (s *Service) registerGuildCommands(
+	ctx context.Context,
+	guildID string,
+) {
+	cmds, err := s.session.ApplicationCommands(
+		s.config.ApplicationID,
+		guildID,
+		s.requestOptions(ctx)...,
+	)
+	if err != nil {
+		telemetry.RecordError(ctx, err)
 	}
 
-	for _, guild := range event.Guilds {
-		cmds, err := s.session.ApplicationCommands(
-			s.config.ApplicationID,
-			guild.ID,
-			s.requestOptions(ctx)...,
-		)
-		if err != nil {
-			telemetry.RecordError(ctx, err)
-		}
+	found := map[string]bool{}
 
-		found := map[string]bool{}
-
-		for _, cmd := range cmds {
-			_, ok := names[cmd.Name]
-			if !ok {
-				err = s.session.ApplicationCommandDelete(
-					s.config.ApplicationID,
-					guild.ID,
-					cmd.ID,
-					s.requestOptions(ctx)...,
-				)
-				if err != nil {
-					telemetry.RecordError(ctx, err)
-				}
+	for _, cmd := range cmds {
+		_, ok := s.existingCommands[cmd.Name]
+		if !ok {
+			err = s.session.ApplicationCommandDelete(
+				s.config.ApplicationID,
+				guildID,
+				cmd.ID,
+				s.requestOptions(ctx)...,
+			)
+			if err != nil {
+				telemetry.RecordError(ctx, err)
 			}
-
-			found[cmd.Name] = true
 		}
 
-		_, err = s.session.ApplicationCommandBulkOverwrite(
-			s.config.ApplicationID,
-			guild.ID,
-			bulkCmds,
-			s.requestOptions(ctx)...,
-		)
-		if err != nil {
-			telemetry.RecordError(ctx, err)
-		}
+		found[cmd.Name] = true
+	}
+
+	_, err = s.session.ApplicationCommandBulkOverwrite(
+		s.config.ApplicationID,
+		guildID,
+		s.getCommands(),
+		s.requestOptions(ctx)...,
+	)
+	if err != nil {
+		telemetry.RecordError(ctx, err)
 	}
 }
 

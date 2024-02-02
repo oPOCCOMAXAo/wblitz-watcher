@@ -3,6 +3,7 @@ package mysql
 import (
 	"database/sql"
 
+	"github.com/pkg/errors"
 	"github.com/samber/do"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/strings"
@@ -23,8 +24,12 @@ func New(
 }
 
 func (r *Repository) Shutdown() error {
-	//nolint:wrapcheck
-	return r.db.Close()
+	err := r.db.Close()
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
 }
 
 func (r *Repository) placeholders(count int) string {

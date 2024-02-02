@@ -11,16 +11,6 @@ import (
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
-func (s *Service) embedError(
-	_ error,
-) *discordgo.MessageEmbed {
-	return &discordgo.MessageEmbed{
-		Title: MessageError,
-		Type:  discordgo.EmbedTypeRich,
-		Color: int(ColorError),
-	}
-}
-
 func (s *Service) embedAccountInfo(
 	account *wg.AccountInfo,
 ) *discordgo.MessageEmbed {

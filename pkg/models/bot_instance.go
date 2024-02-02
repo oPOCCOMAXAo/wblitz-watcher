@@ -5,4 +5,5 @@ type BotInstance struct {
 	ServerID  string
 	ChannelID string
 	Type      SubscriptionType
+	IsDeleted bool
 }

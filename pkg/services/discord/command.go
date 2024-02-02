@@ -41,7 +41,7 @@ func (d *CommandData) ID() CommandFullName {
 }
 
 func (d *CommandData) RequestName() string {
-	return strings.Join(d.Name, " ")
+	return strings.Join(d.Name, "-")
 }
 
 func (d *CommandData) String(name string) string {

@@ -177,6 +177,10 @@ ORDER BY id ASC`,
 
 	rows, err := stmt.QueryContext(ctx, instanceID)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
 		return nil, errors.WithStack(err)
 	}
 
@@ -238,6 +242,24 @@ WHERE id IN (`+r.placeholders(len(ids))+`)`,
 	}
 
 	_, err = stmt.ExecContext(ctx, args...)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+
+	return nil
+}
+
+func (r *Repository) DeleteSubscriptionClansForDeletedInstances(
+	ctx context.Context,
+) error {
+	_, err := r.db.ExecContext(ctx,
+		`DELETE FROM subscription_clan
+WHERE instance_id IN (
+	SELECT id
+	FROM bot_instance
+	WHERE deleted_at != 0
+)`,
+	)
 	if err != nil {
 		return errors.WithStack(err)
 	}

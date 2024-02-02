@@ -29,8 +29,11 @@ func New(config Config) *Client {
 	res := Client{
 		config: config,
 		client: &http.Client{
-			Timeout:   30 * time.Second,
-			Transport: otelhttp.NewTransport(http.DefaultTransport),
+			Timeout: 30 * time.Second,
+			Transport: otelhttp.NewTransport(
+				http.DefaultTransport,
+				otelhttp.WithSpanOptions(models.SpanTypeHTTP.Option()),
+			),
 		},
 		limiter: rate.NewLimiter(rate.Limit(20), 10),
 	}

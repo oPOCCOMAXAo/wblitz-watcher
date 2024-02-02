@@ -71,3 +71,27 @@ func (s *Service) ChannelBind(
 
 	return nil
 }
+
+func (s *Service) CleanupDeletedInstances(
+	ctx context.Context,
+) error {
+	err := s.repo.DeleteSubscriptionClansForDeletedInstances(ctx)
+	if err != nil {
+		//nolint:wrapcheck
+		return err
+	}
+
+	err = s.repo.DeleteDiscordMessagesForDeletedInstances(ctx)
+	if err != nil {
+		//nolint:wrapcheck
+		return err
+	}
+
+	err = s.repo.HardDeleteCleanedInstances(ctx)
+	if err != nil {
+		//nolint:wrapcheck
+		return err
+	}
+
+	return nil
+}

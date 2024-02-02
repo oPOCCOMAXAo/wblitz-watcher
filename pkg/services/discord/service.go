@@ -15,16 +15,19 @@ import (
 )
 
 type Service struct {
-	config       Config
-	isProd       bool
-	tracer       trace.Tracer
-	client       *http.Client
-	session      *discordgo.Session
-	owner        *discordgo.User
-	handlers     map[CommandFullName]CommandHandler
-	isRestricted map[CommandFullName]bool
-	isPrivate    map[CommandFullName]bool
-	isTest       map[string]bool
+	config           Config
+	isProd           bool
+	cmdTracer        trace.Tracer
+	eventTracer      trace.Tracer
+	client           *http.Client
+	session          *discordgo.Session
+	owner            *discordgo.User
+	handlers         map[CommandFullName]CommandHandler
+	eventHandlers    map[EventName]EventHandler
+	isRestricted     map[CommandFullName]bool
+	isPrivate        map[CommandFullName]bool
+	isTest           map[string]bool
+	existingCommands map[string]bool
 }
 
 type Config struct {
@@ -41,11 +44,26 @@ func New(
 	res := Service{
 		config: config,
 		isProd: env.IsProduction(),
-		tracer: telemetry.PackageTracer("discord"),
+		cmdTracer: telemetry.PackageTracer("discord",
+			trace.WithSpanKind(trace.SpanKindServer),
+			models.SpanTypeCommand.Option(),
+		),
+		eventTracer: telemetry.PackageTracer(
+			"discord",
+			trace.WithSpanKind(trace.SpanKindConsumer),
+			models.SpanTypeEvent.Option(),
+		),
 		client: &http.Client{
 			Timeout:   30 * time.Second,
 			Transport: otelhttp.NewTransport(http.DefaultTransport),
 		},
+
+		handlers:         map[CommandFullName]CommandHandler{},
+		eventHandlers:    map[EventName]EventHandler{},
+		isRestricted:     map[CommandFullName]bool{},
+		isPrivate:        map[CommandFullName]bool{},
+		isTest:           map[string]bool{},
+		existingCommands: map[string]bool{},
 	}
 
 	return &res, res.init()
@@ -82,13 +100,12 @@ func (s *Service) init() error {
 
 	s.owner = application.Owner
 
-	s.handlers = map[CommandFullName]CommandHandler{}
-	s.isRestricted = map[CommandFullName]bool{}
-	s.isPrivate = map[CommandFullName]bool{}
-
-	s.isTest = map[string]bool{}
 	for _, channelID := range s.config.TestChannels {
 		s.isTest[channelID] = true
+	}
+
+	for _, cmd := range s.getCommands() {
+		s.existingCommands[cmd.Name] = true
 	}
 
 	s.RegisterCommand(CommandParams{
@@ -104,6 +121,8 @@ func (s *Service) init() error {
 
 	s.session.AddHandler(s.onReady)
 	s.session.AddHandler(s.onInteractionCreate)
+	s.session.AddHandler(s.onGuildCreate)
+	s.session.AddHandler(s.onGuildDelete)
 
 	return nil
 }

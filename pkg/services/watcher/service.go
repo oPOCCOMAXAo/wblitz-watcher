@@ -88,6 +88,11 @@ func (s *Service) Serve(
 		Handler: s.cmdClanList,
 	})
 
+	s.discord.RegisterEvent(discord.EventParams{
+		Name:    discord.EventGuildDelete,
+		Handler: s.eventGuildDelete,
+	})
+
 	go s.serveTasks(ctx, cancel)
 
 	err := s.execInitialTasks(ctx)

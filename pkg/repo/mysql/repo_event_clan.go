@@ -4,8 +4,9 @@ import (
 	"context"
 	"database/sql"
 	_ "embed"
-	"errors"
 	"time"
+
+	"github.com/pkg/errors"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
@@ -23,8 +24,7 @@ func (r *Repository) CreateEventClan(
 VALUES `+r.placeholdersGroup(len(values), 5),
 	)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	defer stmt.Close()
@@ -44,8 +44,7 @@ VALUES `+r.placeholdersGroup(len(values), 5),
 
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -63,8 +62,7 @@ func (r *Repository) DeleteEventClansByID(
 
 	stmt, err := r.db.PrepareContext(ctx, sql)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	defer stmt.Close()
@@ -76,8 +74,7 @@ func (r *Repository) DeleteEventClansByID(
 
 	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return errors.WithStack(err)
 	}
 
 	return nil
@@ -93,8 +90,7 @@ FROM event_clan
 WHERE id = ?`,
 	)
 	if err != nil {
-		//nolint:wrapcheck
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	defer stmt.Close()
@@ -114,11 +110,10 @@ WHERE id = ?`,
 		)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNotFound
+			return nil, errors.WithStack(models.ErrNotFound)
 		}
 
-		//nolint:wrapcheck
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	return &value, nil
@@ -129,12 +124,16 @@ var sqlUpdateEventClanProcessed string
 
 func (r *Repository) UpdateEventClanProcessed(
 	ctx context.Context,
-) error {
-	_, err := r.db.ExecContext(ctx, sqlUpdateEventClanProcessed)
+) (int64, error) {
+	res, err := r.db.ExecContext(ctx, sqlUpdateEventClanProcessed)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return 0, errors.WithStack(err)
 	}
 
-	return nil
+	total, err := res.RowsAffected()
+	if err != nil {
+		return 0, errors.WithStack(err)
+	}
+
+	return total, nil
 }

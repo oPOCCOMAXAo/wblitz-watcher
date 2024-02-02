@@ -19,25 +19,27 @@ func (s *Service) TaskProcessEvents(
 	ctx, span := s.taskTracer.Start(ctx, "processEvents")
 	defer span.End()
 
-	err := s.taskProcessEvents(ctx)
+	total, err := s.taskProcessEvents(ctx)
 	if err != nil {
 		span.RecordError(err)
 		span.SetStatus(codes.Error, err.Error())
 	}
 
-	s.notifyTaskSendMessages()
+	if total > 0 {
+		s.notifyTaskSendMessages()
+	}
 
 	return err
 }
 
 func (s *Service) taskProcessEvents(
 	ctx context.Context,
-) error {
-	err := s.domain.CreateDiscordMessagesForEventClan(ctx)
+) (int64, error) {
+	total, err := s.domain.CreateDiscordMessagesForEventClan(ctx)
 	if err != nil {
 		//nolint:wrapcheck
-		return err
+		return total, err
 	}
 
-	return nil
+	return total, nil
 }

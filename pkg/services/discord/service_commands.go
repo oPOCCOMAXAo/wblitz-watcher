@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/bwmarrin/discordgo"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 type CommandParams struct {
@@ -78,4 +80,31 @@ func (s *Service) parseCommandIDs(
 	}
 
 	return res
+}
+
+func (s *Service) processCommand(
+	ctx context.Context,
+	event *discordgo.InteractionCreate,
+	data *CommandData,
+) (*Response, error) {
+	id := data.ID()
+
+	handler, ok := s.handlers[id]
+	if !ok || handler == nil {
+		return nil, models.ErrNotFound
+	}
+
+	if s.isRestricted[id] {
+		err := s.VerifyAccess(event)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	resp, err := handler(ctx, event, data)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

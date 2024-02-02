@@ -90,18 +90,27 @@ func (s *Service) cmdClanList(
 		res.Content = MessageError
 
 		telemetry.RecordError(ctx, err)
-	} else {
-		res.Content = fmt.Sprintf("Clans\n\nCurrent limit: `%d`", clans.Limit)
+
+		return &res, nil
 	}
 
-	if clans != nil {
-		if len(clans.ClansEnabled) > 0 {
-			res.Embeds = append(res.Embeds, s.embedClanList(clans.ClansEnabled, false)...)
-		}
+	used := int64(len(clans.ClansEnabled))
 
-		if len(clans.ClansDisabled) > 0 {
-			res.Embeds = append(res.Embeds, s.embedClanList(clans.ClansDisabled, true)...)
-		}
+	res.Content = fmt.Sprintf("Clan list. Current limit: `%d/%d`",
+		used,
+		clans.Limit,
+	)
+
+	if used >= clans.Limit {
+		res.Content += "\n\nLimit reached. Extra clans will be disabled."
+	}
+
+	if len(clans.ClansEnabled) > 0 {
+		res.Embeds = append(res.Embeds, s.embedClanList(clans.ClansEnabled, false)...)
+	}
+
+	if len(clans.ClansDisabled) > 0 {
+		res.Embeds = append(res.Embeds, s.embedClanList(clans.ClansDisabled, true)...)
 	}
 
 	return &res, nil

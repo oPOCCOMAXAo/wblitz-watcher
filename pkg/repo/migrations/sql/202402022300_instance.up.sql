@@ -1,0 +1,2 @@
+ALTER TABLE bot_instance
+ADD COLUMN deleted_at BIGINT(20) NOT NULL DEFAULT 0;
