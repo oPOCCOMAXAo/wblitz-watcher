@@ -32,7 +32,7 @@ func (c *Config) Provide(
 	appCtx context.Context,
 ) {
 	server.Provide(i, c.Server)
-	discord.Provide(i, c.Discord, c.Environment)
+	discord.Provide(i, c.Discord)
 	telemetry.Provide(i, appCtx, c.Telemetry)
 	watcher.Provide(i)
 	wg.Provide(i, c.WG)

@@ -1,12 +1,10 @@
 package discord
 
-import "github.com/bwmarrin/discordgo"
-
-func (s *Service) isEventIgnored(
-	_ *discordgo.InteractionCreate,
-	data *CommandData,
+func (s *Service) isChannelIgnored(
+	channelID string,
 ) bool {
-	eventIsProd := !data.IsTest
+	specifiedIgnore := s.ignoredChannelMap[channelID]
+	notUsed := s.useOnlyChannels && !s.onlyChannelsMap[channelID]
 
-	return s.isProd != eventIsProd
+	return specifiedIgnore || notUsed
 }

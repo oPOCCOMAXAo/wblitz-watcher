@@ -23,7 +23,6 @@ type CommandHandler func(
 type CommandData struct {
 	Name    []string
 	Options map[string]any
-	IsTest  bool
 }
 
 func (d *CommandData) ID() CommandFullName {

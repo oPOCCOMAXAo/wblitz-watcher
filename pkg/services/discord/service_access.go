@@ -14,7 +14,7 @@ func (s *Service) VerifyAccess(
 		return models.ErrNoAccess
 	}
 
-	if s.isOwner(event) {
+	if s.isSuperUser(event) {
 		return nil
 	}
 
@@ -25,7 +25,7 @@ func (s *Service) VerifyAccess(
 	return models.ErrNoAccess
 }
 
-func (s *Service) isOwner(
+func (s *Service) isSuperUser(
 	event *discordgo.InteractionCreate,
 ) bool {
 	var user *discordgo.User
@@ -38,7 +38,7 @@ func (s *Service) isOwner(
 		user = event.User
 	}
 
-	return user.ID == s.owner.ID
+	return s.superUserMap[user.ID]
 }
 
 func (s *Service) isAdmin(

@@ -20,7 +20,7 @@ func (s *Service) onInteractionCreate(
 ) {
 	data := s.parseInteractionData(event)
 
-	if s.isEventIgnored(event, data) {
+	if s.isChannelIgnored(event.ChannelID) {
 		log.Printf("ignored: %s\n", data.Name)
 
 		return
@@ -95,7 +95,6 @@ func (s *Service) parseInteractionData(
 	res := CommandData{
 		Name:    []string{data.Name},
 		Options: map[string]any{},
-		IsTest:  s.isTest[event.ChannelID],
 	}
 
 	for _, opt := range data.Options {

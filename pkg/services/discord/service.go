@@ -15,35 +15,36 @@ import (
 )
 
 type Service struct {
-	config           Config
-	isProd           bool
-	cmdTracer        trace.Tracer
-	eventTracer      trace.Tracer
-	client           *http.Client
-	session          *discordgo.Session
-	owner            *discordgo.User
-	handlers         map[CommandFullName]CommandHandler
-	eventHandlers    map[EventName]EventHandler
-	isRestricted     map[CommandFullName]bool
-	isPrivate        map[CommandFullName]bool
-	isTest           map[string]bool
-	existingCommands map[string]bool
+	config            Config
+	cmdTracer         trace.Tracer
+	eventTracer       trace.Tracer
+	client            *http.Client
+	session           *discordgo.Session
+	handlers          map[CommandFullName]CommandHandler
+	eventHandlers     map[EventName]EventHandler
+	isRestricted      map[CommandFullName]bool
+	isPrivate         map[CommandFullName]bool
+	ignoredChannelMap map[string]bool
+	useOnlyChannels   bool
+	onlyChannelsMap   map[string]bool
+	superUserMap      map[string]bool
+	existingCommands  map[string]bool
 }
 
 type Config struct {
-	ApplicationID string   `env:"APPLICATION_ID,required"`
-	BotToken      string   `env:"BOT_TOKEN,required"`
-	TestChannels  []string `env:"TEST_CHANNELS"`
+	ApplicationID   string   `env:"APPLICATION_ID,required"`
+	BotToken        string   `env:"BOT_TOKEN,required"`
+	IgnoreChannels  []string `env:"IGNORE_CHANNELS"`
+	UseOnlyChannels []string `env:"USE_ONLY_CHANNELS"`
+	SuperUsers      []string `env:"SUPER_USERS"`
 }
 
 func New(
 	config Config,
-	env models.Environment,
 	telemetry *telemetry.Service,
 ) (*Service, error) {
 	res := Service{
 		config: config,
-		isProd: env.IsProduction(),
 		cmdTracer: telemetry.PackageTracer("discord",
 			trace.WithSpanKind(trace.SpanKindServer),
 			models.SpanTypeCommand.Option(),
@@ -58,12 +59,14 @@ func New(
 			Transport: otelhttp.NewTransport(http.DefaultTransport),
 		},
 
-		handlers:         map[CommandFullName]CommandHandler{},
-		eventHandlers:    map[EventName]EventHandler{},
-		isRestricted:     map[CommandFullName]bool{},
-		isPrivate:        map[CommandFullName]bool{},
-		isTest:           map[string]bool{},
-		existingCommands: map[string]bool{},
+		handlers:          map[CommandFullName]CommandHandler{},
+		eventHandlers:     map[EventName]EventHandler{},
+		isRestricted:      map[CommandFullName]bool{},
+		isPrivate:         map[CommandFullName]bool{},
+		ignoredChannelMap: map[string]bool{},
+		onlyChannelsMap:   map[string]bool{},
+		superUserMap:      map[string]bool{},
+		existingCommands:  map[string]bool{},
 	}
 
 	return &res, res.init()
@@ -98,10 +101,22 @@ func (s *Service) init() error {
 		return errors.WithMessage(models.ErrFailed, "owner is nil")
 	}
 
-	s.owner = application.Owner
+	for _, channelID := range s.config.IgnoreChannels {
+		s.ignoredChannelMap[channelID] = true
+	}
 
-	for _, channelID := range s.config.TestChannels {
-		s.isTest[channelID] = true
+	for _, channelID := range s.config.UseOnlyChannels {
+		s.onlyChannelsMap[channelID] = true
+	}
+
+	s.useOnlyChannels = len(s.onlyChannelsMap) > 0
+
+	for _, userID := range s.config.SuperUsers {
+		s.superUserMap[userID] = true
+	}
+
+	if application.Owner != nil {
+		s.superUserMap[application.Owner.ID] = true
 	}
 
 	for _, cmd := range s.getCommands() {
