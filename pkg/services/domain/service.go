@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"sync"
 	"time"
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
@@ -12,6 +13,9 @@ type Service struct {
 	repo    repo.Repository
 	wg      *wg.Client
 	discord *discord.Service
+
+	fastFixExecutions map[string]struct{}
+	fastFixMutex      sync.Mutex
 }
 
 func NewService(
@@ -23,6 +27,9 @@ func NewService(
 		repo:    repo,
 		wg:      wg,
 		discord: discord,
+
+		fastFixExecutions: make(map[string]struct{}, 100),
+		fastFixMutex:      sync.Mutex{},
 	}
 }
 

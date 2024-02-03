@@ -42,6 +42,24 @@ func (s *Service) EnsureInstance(
 	return nil
 }
 
+func (s *Service) EnsureInstancesForAllTypes(
+	ctx context.Context,
+	params *FastFixParams,
+) error {
+	for _, typ := range models.SubscriptionTypes {
+		err := s.EnsureInstance(ctx, &models.BotInstance{
+			ServerID:  params.ServerID,
+			ChannelID: params.ChannelID,
+			Type:      typ,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 type ChannelBindRequest struct {
 	ServerID  string
 	ChannelID string

@@ -86,11 +86,12 @@ func TestCalculate_int64(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			res := Calculate(
+			res := Slice(
 				tC.newList,
 				tC.oldList,
 				Ints.GetUniqueID,
 				Ints.PrepareToUpdate,
+				Ints.Equals,
 			)
 
 			require.Equal(t, tC.diff, res)
@@ -138,15 +139,12 @@ func TestCalculate_struct(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run("", func(t *testing.T) {
-			res := Calculate(
+			res := Slice(
 				tC.newList,
 				tC.oldList,
 				func(e *element) int64 { return e.UniqueID },
-				func(old, new *element) bool {
-					new.InternalID = old.InternalID
-
-					return old.Value != new.Value
-				},
+				func(newE, oldE *element) { newE.InternalID = oldE.InternalID },
+				func(a, b *element) bool { return *a == *b },
 			)
 
 			require.Equal(t, tC.diff, res)

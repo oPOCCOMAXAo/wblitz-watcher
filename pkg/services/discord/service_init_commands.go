@@ -8,18 +8,6 @@ import (
 	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
-func (s *Service) onReady(
-	_ *discordgo.Session,
-	event *discordgo.Ready,
-) {
-	ctx, span := s.eventTracer.Start(context.Background(), "onReady")
-	defer span.End()
-
-	for _, guild := range event.Guilds {
-		s.registerGuildCommands(ctx, guild.ID)
-	}
-}
-
 func (s *Service) registerGuildCommands(
 	ctx context.Context,
 	guildID string,
@@ -30,7 +18,7 @@ func (s *Service) registerGuildCommands(
 		s.requestOptions(ctx)...,
 	)
 	if err != nil {
-		telemetry.RecordError(ctx, err)
+		telemetry.RecordErrorFail(ctx, err)
 	}
 
 	found := map[string]bool{}
@@ -45,7 +33,7 @@ func (s *Service) registerGuildCommands(
 				s.requestOptions(ctx)...,
 			)
 			if err != nil {
-				telemetry.RecordError(ctx, err)
+				telemetry.RecordErrorFail(ctx, err)
 			}
 		}
 
@@ -59,7 +47,7 @@ func (s *Service) registerGuildCommands(
 		s.requestOptions(ctx)...,
 	)
 	if err != nil {
-		telemetry.RecordError(ctx, err)
+		telemetry.RecordErrorFail(ctx, err)
 	}
 }
 

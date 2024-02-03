@@ -10,7 +10,7 @@ func (s *Service) eventGuildDelete(
 	ctx context.Context,
 	event *discord.Event,
 ) error {
-	err := s.domain.DeleteDiscordGuildData(ctx, event.GuildID)
+	err := s.domain.DeleteDiscordGuildData(ctx, event.Guild.ID)
 	if err != nil {
 		//nolint:wrapcheck
 		return err

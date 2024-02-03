@@ -84,10 +84,18 @@ func (s *Service) getNotificationTypeOption() *discordgo.ApplicationCommandOptio
 		Choices: []*discordgo.ApplicationCommandOptionChoice{
 			{
 				Name:  "Clan notifications",
-				Value: "clan",
+				Value: models.STClan,
 				NameLocalizations: map[discordgo.Locale]string{
 					"uk": "Сповіщення клану",
 					"ru": "Уведомления клана",
+				},
+			},
+			{
+				Name:  "Info notifications",
+				Value: models.STInfo,
+				NameLocalizations: map[discordgo.Locale]string{
+					"uk": "Інформаційні сповіщення",
+					"ru": "Информационные уведомления",
 				},
 			},
 		},

@@ -25,7 +25,7 @@ func (s *Service) onGuildDelete(
 	}
 
 	err := s.processEvent(ctx, EventGuildDelete, &Event{
-		GuildID: event.Guild.ID,
+		Guild: event.Guild,
 	})
 	if err != nil {
 		telemetry.RecordErrorFail(ctx, err)

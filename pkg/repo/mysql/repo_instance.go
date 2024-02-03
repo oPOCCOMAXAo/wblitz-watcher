@@ -184,12 +184,16 @@ WHERE type = ?`,
 
 func (r *Repository) SoftDeleteInstancesByServer(
 	ctx context.Context,
-	value string,
+	value []string,
 ) error {
+	if len(value) == 0 {
+		return nil
+	}
+
 	stmt, err := r.db.PrepareContext(ctx,
 		`UPDATE bot_instance
 SET updated_at = ?, deleted_at = ?
-WHERE server_id = ?`,
+WHERE server_id IN (`+r.placeholders(len(value))+`)`,
 	)
 	if err != nil {
 		return errors.WithStack(err)
@@ -199,11 +203,14 @@ WHERE server_id = ?`,
 
 	now := time.Now().Unix()
 
-	_, err = stmt.ExecContext(ctx,
-		now,
-		now,
-		value,
-	)
+	args := make([]any, 0, len(value)+2)
+	args = append(args, now, now)
+
+	for _, v := range value {
+		args = append(args, v)
+	}
+
+	_, err = stmt.ExecContext(ctx, args...)
 	if err != nil {
 		return errors.WithStack(err)
 	}
@@ -225,4 +232,50 @@ WHERE deleted_at > 0`,
 	}
 
 	return nil
+}
+
+func (r *Repository) GetNonDeletedInstancesServers(
+	ctx context.Context,
+) ([]string, error) {
+	stmt, err := r.db.PrepareContext(ctx,
+		`SELECT DISTINCT server_id
+FROM bot_instance
+WHERE deleted_at = 0`,
+	)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	defer stmt.Close()
+
+	rows, err := stmt.QueryContext(ctx)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
+
+		return nil, errors.WithStack(err)
+	}
+
+	defer rows.Close()
+
+	var res []string
+
+	for rows.Next() {
+		var item string
+
+		err = rows.Scan(&item)
+		if err != nil {
+			return nil, errors.WithStack(err)
+		}
+
+		res = append(res, item)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+
+	return res, nil
 }

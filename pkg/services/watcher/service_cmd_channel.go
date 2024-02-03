@@ -21,6 +21,11 @@ func (s *Service) cmdChannelBind(
 		Type:      models.SubscriptionType(data.String("type")),
 	}
 
+	defer s.domain.FastFixDiscordGuildOnce(ctx, &domain.FastFixParams{
+		ServerID:  event.GuildID,
+		ChannelID: request.ChannelID,
+	})
+
 	err := s.domain.ChannelBind(ctx, &request)
 	if err != nil {
 		//nolint:wrapcheck

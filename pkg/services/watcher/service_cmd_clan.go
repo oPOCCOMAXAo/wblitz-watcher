@@ -24,6 +24,11 @@ func (s *Service) cmdClanAdd(
 		Region:    models.Region(data.String("server")),
 	}
 
+	defer s.domain.FastFixDiscordGuildOnce(ctx, &domain.FastFixParams{
+		ServerID:  event.GuildID,
+		ChannelID: event.ChannelID,
+	})
+
 	clan, err := s.domain.ClanAdd(ctx, &request)
 
 	var res discord.Response
@@ -54,6 +59,11 @@ func (s *Service) cmdClanRemove(
 		Region:   models.Region(data.String("server")),
 	}
 
+	defer s.domain.FastFixDiscordGuildOnce(ctx, &domain.FastFixParams{
+		ServerID:  event.GuildID,
+		ChannelID: event.ChannelID,
+	})
+
 	clan, err := s.domain.ClanRemove(ctx, &request)
 
 	var res discord.Response
@@ -79,8 +89,14 @@ func (s *Service) cmdClanList(
 	_ *discord.CommandData,
 ) (*discord.Response, error) {
 	request := domain.ClanListRequest{
-		ServerID: event.GuildID,
+		ServerID:  event.GuildID,
+		ChannelID: event.ChannelID,
 	}
+
+	defer s.domain.FastFixDiscordGuildOnce(ctx, &domain.FastFixParams{
+		ServerID:  event.GuildID,
+		ChannelID: event.ChannelID,
+	})
 
 	clans, err := s.domain.ClanList(ctx, &request)
 

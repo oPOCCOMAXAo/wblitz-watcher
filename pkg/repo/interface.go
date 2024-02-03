@@ -23,8 +23,9 @@ type Instance interface {
 	GetInstance(context.Context, *models.BotInstance) (*models.BotInstance, error)
 	UpdateInstance(context.Context, *models.BotInstance) error
 	GetInstancesByType(context.Context, models.SubscriptionType) ([]*models.BotInstance, error)
-	SoftDeleteInstancesByServer(context.Context, string) error
+	SoftDeleteInstancesByServer(context.Context, []string) error
 	HardDeleteCleanedInstances(context.Context) error
+	GetNonDeletedInstancesServers(context.Context) ([]string, error)
 }
 
 type SubscriptionClan interface {

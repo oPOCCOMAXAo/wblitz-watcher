@@ -1,24 +1,14 @@
 package diff
 
-// UniqueIDFunc is a function that returns a unique ID for element.
-type UniqueIDFunc[E any, ID comparable] func(e E) ID
-
-// PrepareToUpdateFunc is a function that compares two elements and returns true if element should be updated.
-// Also it must copy all required information from old element to new element.
-type PrepareToUpdateFunc[E any] func(old, new E) bool
-
-// Calculate calculates diff between two slices.
+// Slice calculates diff between two slices.
 //
 // It returns a Diff struct with created, updated and deleted elements.
-//
-// Params:
-//   - getUniqueIDFn see UniqueIDFunc.
-//   - prepareToUpdateFn see PrepareToUpdateFunc.
-func Calculate[T ~[]E, E any, ID comparable](
+func Slice[T ~[]E, E any, ID comparable](
 	newList T,
 	oldList T,
-	getUniqueIDFn UniqueIDFunc[E, ID],
-	prepareToUpdateFn PrepareToUpdateFunc[E],
+	getUniqueIDFn func(e E) ID,
+	prepareToUpdateFn func(newE, oldE E),
+	equals func(newE, oldE E) bool,
 ) Diff[E] {
 	res := Diff[E]{
 		Created: make([]E, 0, len(newList)),
@@ -45,7 +35,9 @@ func Calculate[T ~[]E, E any, ID comparable](
 			continue
 		}
 
-		if prepareToUpdateFn(oldItem, newItem) {
+		prepareToUpdateFn(newItem, oldItem)
+
+		if !equals(newItem, oldItem) {
 			res.Updated = append(res.Updated, newItem)
 		}
 	}

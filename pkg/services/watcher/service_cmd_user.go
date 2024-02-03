@@ -13,13 +13,18 @@ import (
 
 func (s *Service) cmdUserStats(
 	ctx context.Context,
-	_ *discordgo.InteractionCreate,
+	event *discordgo.InteractionCreate,
 	data *discord.CommandData,
 ) (*discord.Response, error) {
 	request := domain.UserStatsRequest{
 		Username: data.String("username"),
 		Region:   models.Region(data.String("server")),
 	}
+
+	defer s.domain.FastFixDiscordGuildOnce(ctx, &domain.FastFixParams{
+		ServerID:  event.GuildID,
+		ChannelID: event.ChannelID,
+	})
 
 	user, err := s.domain.UserStats(ctx, &request)
 	if err != nil {

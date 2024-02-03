@@ -82,11 +82,12 @@ func (s *Service) taskWatchClan(
 			}
 		}
 
-		idDiff := diff.Calculate(
+		idDiff := diff.Slice(
 			apiClan.MembersIDs,
 			dbClan.MembersIDs,
 			diff.Ints.GetUniqueID,
 			diff.Ints.PrepareToUpdate,
+			diff.Ints.Equals,
 		)
 
 		if idDiff.IsEmpty() {

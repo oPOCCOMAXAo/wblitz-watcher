@@ -89,6 +89,16 @@ func (s *Service) Serve(
 	})
 
 	s.discord.RegisterEvent(discord.EventParams{
+		Name:    discord.EventReady,
+		Handler: s.eventReady,
+	})
+
+	s.discord.RegisterEvent(discord.EventParams{
+		Name:    discord.EventGuildCreate,
+		Handler: s.eventGuildCreate,
+	})
+
+	s.discord.RegisterEvent(discord.EventParams{
 		Name:    discord.EventGuildDelete,
 		Handler: s.eventGuildDelete,
 	})
