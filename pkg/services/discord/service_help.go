@@ -27,10 +27,12 @@ func (s *Service) cmdHelp(
 				Value: fmt.Sprintf(
 					`</help:%s> - print this help
 </ping:%s> - check server
+</invite:%s> - get invite link
 </user stats:%s> - print user stats
 </clan list:%s> - list of clans for notifications`,
 					ids[CommandFullName{Name: "help"}],
 					ids[CommandFullName{Name: "ping"}],
+					ids[CommandFullName{Name: "invite"}],
 					ids[CommandFullName{Name: "user", SubName: "stats"}],
 					ids[CommandFullName{Name: "clan", SubName: "list"}],
 				),

@@ -71,6 +71,14 @@ func (s *Service) getCommands() []*discordgo.ApplicationCommand {
 			},
 		},
 		{
+			Name:        "invite",
+			Description: "Invite bot",
+			DescriptionLocalizations: &map[discordgo.Locale]string{
+				"uk": "Запросити бота",
+				"ru": "Пригласить бота",
+			},
+		},
+		{
 			Name:        "user",
 			Description: "User commands",
 			DescriptionLocalizations: &map[discordgo.Locale]string{

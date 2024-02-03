@@ -2,6 +2,8 @@ package discord
 
 import (
 	"context"
+	"net/url"
+	"strconv"
 
 	"github.com/bwmarrin/discordgo"
 
@@ -42,6 +44,22 @@ func (s *Service) cmdPing(
 ) (*Response, error) {
 	return &Response{
 		Content: "Pong!",
+	}, nil
+}
+
+func (s *Service) cmdInvite(
+	_ context.Context,
+	_ *discordgo.InteractionCreate,
+	_ *CommandData,
+) (*Response, error) {
+	query := url.Values{
+		"client_id":   {s.config.ApplicationID},
+		"permissions": {strconv.FormatInt(s.config.Permissions, 10)},
+		"scope":       {"bot applications.commands"},
+	}
+
+	return &Response{
+		Content: "https://discord.com/api/oauth2/authorize?" + query.Encode(),
 	}, nil
 }
 

@@ -34,6 +34,7 @@ type Service struct {
 type Config struct {
 	ApplicationID   string   `env:"APPLICATION_ID,required"`
 	BotToken        string   `env:"BOT_TOKEN,required"`
+	Permissions     int64    `env:"PERMISSIONS,required"`
 	IgnoreChannels  []string `env:"IGNORE_CHANNELS"`
 	UseOnlyChannels []string `env:"USE_ONLY_CHANNELS"`
 	SuperUsers      []string `env:"SUPER_USERS"`
@@ -123,6 +124,13 @@ func (s *Service) init() error {
 		s.existingCommands[cmd.Name] = true
 	}
 
+	s.initDefaultCommands()
+	s.initEventHandlers()
+
+	return nil
+}
+
+func (s *Service) initDefaultCommands() {
 	s.RegisterCommand(CommandParams{
 		Name:      "ping",
 		Handler:   s.cmdPing,
@@ -133,13 +141,18 @@ func (s *Service) init() error {
 		Handler:   s.cmdHelp,
 		IsPrivate: false,
 	})
+	s.RegisterCommand(CommandParams{
+		Name:      "invite",
+		Handler:   s.cmdInvite,
+		IsPrivate: true,
+	})
+}
 
+func (s *Service) initEventHandlers() {
 	s.session.AddHandler(s.onReady)
 	s.session.AddHandler(s.onInteractionCreate)
 	s.session.AddHandler(s.onGuildCreate)
 	s.session.AddHandler(s.onGuildDelete)
-
-	return nil
 }
 
 func (s *Service) requestOptions(
