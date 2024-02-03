@@ -1,0 +1,16 @@
+[Unit]
+Description=WoT Blitz Watcher service
+After=network.target
+StartLimitBurst=5
+StartLimitIntervalSec=30
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStart=/usr/local/bin/wbwatcher
+EnvironmentFile=/etc/wbwatcher/wbwatcher.env
+WorkingDirectory=/usr/local
+
+[Install]
+WantedBy=multi-user.target

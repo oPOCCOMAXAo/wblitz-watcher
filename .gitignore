@@ -5,3 +5,6 @@
 .bin
 
 __debug_bin*
+
+deb/usr/local/bin/*
+wbwatcher.deb

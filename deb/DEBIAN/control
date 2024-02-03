@@ -1,0 +1,6 @@
+Package: wbwatcher
+Version: 0.1
+Maintainer: oPOCCOMAXAo
+Architecture: amd64
+Description: WoT Blitz watcher bot
+Build-Depends: dh-systemd (>=1.5)

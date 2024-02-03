@@ -1,0 +1,3 @@
+#!/bin/sh
+systemctl enable wbwatcher
+systemctl restart wbwatcher
