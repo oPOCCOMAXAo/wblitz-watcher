@@ -47,6 +47,7 @@ jobs:
           docker build -t $username/$project:$deploy_tag .
           docker push $username/$project:$deploy_tag
 
+          git fetch --tags origin
           tag=`git describe --tags --exact-match || echo ""`
           if [ "$tag" ]
           then

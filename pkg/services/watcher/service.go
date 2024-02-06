@@ -52,6 +52,20 @@ func (s *Service) Serve(
 	ctx context.Context,
 	cancel context.CancelCauseFunc,
 ) error {
+	s.registerCommands()
+	s.registerEvents()
+
+	go s.serveTasks(ctx, cancel)
+
+	err := s.execInitialTasks(ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Service) registerCommands() {
 	s.discord.RegisterCommand(discord.CommandParams{
 		Name:    "user",
 		SubName: "stats",
@@ -87,7 +101,9 @@ func (s *Service) Serve(
 		SubName: "list",
 		Handler: s.cmdClanList,
 	})
+}
 
+func (s *Service) registerEvents() {
 	s.discord.RegisterEvent(discord.EventParams{
 		Name:    discord.EventReady,
 		Handler: s.eventReady,
@@ -102,15 +118,6 @@ func (s *Service) Serve(
 		Name:    discord.EventGuildDelete,
 		Handler: s.eventGuildDelete,
 	})
-
-	go s.serveTasks(ctx, cancel)
-
-	err := s.execInitialTasks(ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (s *Service) Shutdown() error {

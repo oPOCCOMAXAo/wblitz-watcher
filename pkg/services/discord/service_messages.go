@@ -18,8 +18,7 @@ func (s *Service) SendMessage(
 		discordgo.WithClient(s.client),
 	)
 	if err != nil {
-		//nolint:wrapcheck
-		return err
+		return MapError(err)
 	}
 
 	return nil

@@ -67,7 +67,9 @@ func (s *Service) taskSendMessageFirst(
 	))
 
 	err = s.discord.SendMessage(ctx, data.Message.ChannelID, &res)
-	if err != nil {
+	if err != nil &&
+		!errors.Is(err, models.ErrNoAccess) &&
+		!errors.Is(err, models.ErrNotFound) {
 		//nolint:wrapcheck
 		return err
 	}
