@@ -3,8 +3,6 @@ package domain
 import (
 	"context"
 
-	"github.com/samber/lo"
-
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/utils/diff"
@@ -129,19 +127,14 @@ func (s *Service) UpdateWGClanMembers(
 		return err
 	}
 
-	ids := make([]models.WGClanID, 0, len(values.Created)+len(values.Updated))
+	return nil
+}
 
-	for _, value := range values.Created {
-		ids = append(ids, value.GetFullClanID())
-	}
-
-	for _, value := range values.Updated {
-		ids = append(ids, value.GetFullClanID())
-	}
-
-	ids = lo.Uniq(ids)
-
-	err = s.repo.UpdateWGClansMembersUpdatedAt(ctx, s.now(), ids)
+func (s *Service) UpdateWGClansMembersUpdateTime(
+	ctx context.Context,
+	clans []models.WGClanID,
+) error {
+	err := s.repo.UpdateWGClansMembersUpdatedAt(ctx, s.now(), clans)
 	if err != nil {
 		//nolint:wrapcheck
 		return err

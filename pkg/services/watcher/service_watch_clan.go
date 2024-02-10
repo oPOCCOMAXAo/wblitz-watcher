@@ -25,7 +25,7 @@ func (s *Service) TaskWatchClan(
 	return err
 }
 
-//nolint:funlen,cyclop
+//nolint:funlen
 func (s *Service) taskWatchClan(
 	ctx context.Context,
 ) error {
@@ -56,6 +56,15 @@ func (s *Service) taskWatchClan(
 		//nolint:wrapcheck
 		return err
 	}
+
+	updatedIDs := make([]models.WGClanID, 0, len(ids))
+
+	defer func() {
+		err := s.domain.UpdateWGClansMembersUpdateTime(ctx, updatedIDs)
+		if err != nil {
+			telemetry.RecordError(ctx, err)
+		}
+	}()
 
 	for _, apiClan := range allClansMembers {
 		if !apiClan.IsFound {
@@ -90,33 +99,51 @@ func (s *Service) taskWatchClan(
 			diff.Ints.Equals,
 		)
 
-		if idDiff.IsEmpty() {
-			continue
+		err = s.updateClanByIDDiff(ctx, dbClan, &idDiff, &notifyRequired)
+		if err != nil {
+			return err
 		}
 
-		memDiff := diff.Diff[*models.WGClanMember]{
-			Created: lo.Map(idDiff.Created, apiClan.ID.MapMember),
-			Updated: lo.Map(idDiff.Updated, apiClan.ID.MapMember),
-			Deleted: lo.Map(idDiff.Deleted, apiClan.ID.MapMember),
-		}
+		updatedIDs = append(updatedIDs, apiClan.ID)
+	}
 
-		if s.isClanMembersInitialized(dbClan.Clan) {
-			total, err := s.domain.CreateEventClanByMembersDiff(ctx, &memDiff)
-			if err != nil {
-				//nolint:wrapcheck
-				return err
-			}
+	return nil
+}
 
-			if total > 0 {
-				notifyRequired = true
-			}
-		}
+func (s *Service) updateClanByIDDiff(
+	ctx context.Context,
+	dbClan *models.WGClanExtended,
+	idDiff *diff.Diff[int64],
+	notifyRequired *bool,
+) error {
+	if idDiff.IsEmpty() {
+		return nil
+	}
 
-		err = s.domain.UpdateWGClanMembers(ctx, &memDiff)
+	mapper := dbClan.Clan.GetFullClanID().MapMember
+
+	memDiff := diff.Diff[*models.WGClanMember]{
+		Created: lo.Map(idDiff.Created, mapper),
+		Updated: lo.Map(idDiff.Updated, mapper),
+		Deleted: lo.Map(idDiff.Deleted, mapper),
+	}
+
+	if s.isClanMembersInitialized(dbClan.Clan) {
+		total, err := s.domain.CreateEventClanByMembersDiff(ctx, &memDiff)
 		if err != nil {
 			//nolint:wrapcheck
 			return err
 		}
+
+		if total > 0 {
+			*notifyRequired = true
+		}
+	}
+
+	err := s.domain.UpdateWGClanMembers(ctx, &memDiff)
+	if err != nil {
+		//nolint:wrapcheck
+		return err
 	}
 
 	return nil
