@@ -9,6 +9,7 @@ import (
 
 	"github.com/opoccomaxao/wblitz-watcher/pkg/clients/wg"
 	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
+	du "github.com/opoccomaxao/wblitz-watcher/pkg/utils/discordutils"
 )
 
 func (s *Service) embedAccountInfo(
@@ -17,17 +18,17 @@ func (s *Service) embedAccountInfo(
 	return &discordgo.MessageEmbed{
 		Fields: []*discordgo.MessageEmbedField{
 			{
-				Name:   "Wins",
+				Name:   MessageWins,
 				Value:  account.StatWins(),
 				Inline: true,
 			},
 			{
-				Name:   "Damage",
+				Name:   MessageDamage,
 				Value:  account.StatDamage(),
 				Inline: true,
 			},
 			{
-				Name:   "Battles",
+				Name:   MessageBattles,
 				Value:  account.StatBattles(),
 				Inline: true,
 			},
@@ -44,15 +45,15 @@ func (s *Service) embedClan(
 	return &discordgo.MessageEmbed{
 		Fields: []*discordgo.MessageEmbedField{
 			{
-				Name:  "Tag",
-				Value: clan.Tag,
+				Name:  MessageTag,
+				Value: du.EscapeText(clan.Tag),
 			},
 			{
-				Name:  "Name",
-				Value: clan.Name,
+				Name:  MessageName,
+				Value: du.EscapeText(clan.Name),
 			},
 			{
-				Name:  "Region",
+				Name:  MessageRegion,
 				Value: clan.Region.Pretty(),
 			},
 		},
@@ -81,8 +82,8 @@ func (s *Service) embedClanList(
 
 		for i, clan := range group {
 			embed.Fields[i] = &discordgo.MessageEmbedField{
-				Name:  fmt.Sprintf("[%s] (%s)", clan.Tag, clan.Region.Pretty()),
-				Value: clan.Name,
+				Name:  fmt.Sprintf("[%s] (%s)", du.EscapeText(clan.Tag), clan.Region.Pretty()),
+				Value: du.EscapeText(clan.Name),
 			}
 		}
 	}
@@ -108,10 +109,10 @@ func (s *Service) embedClanEvent(
 	switch event.Type {
 	case models.ETCEnter:
 		embed.Color = int(ColorEnter)
-		embed.Description = fmt.Sprintf("**%s** %s", user.Nickname, MessageEnter)
+		embed.Description = fmt.Sprintf("**%s** %s", du.EscapeText(user.Nickname), MessageEnter)
 	case models.ETCLeave:
 		embed.Color = int(ColorLeave)
-		embed.Description = fmt.Sprintf("**%s** %s", user.Nickname, MessageLeave)
+		embed.Description = fmt.Sprintf("**%s** %s", du.EscapeText(user.Nickname), MessageLeave)
 	}
 
 	embed.Fields = append(embed.Fields,

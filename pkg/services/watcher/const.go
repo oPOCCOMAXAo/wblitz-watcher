@@ -27,4 +27,7 @@ const (
 	MessageWins    = "Wins"
 	MessageDamage  = "Damage"
 	MessageBattles = "Battles"
+	MessageTag     = "Tag"
+	MessageName    = "Name"
+	MessageRegion  = "Region"
 )
