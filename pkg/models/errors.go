@@ -9,4 +9,5 @@ var (
 	ErrNoAccess      = errors.New("no access")
 	ErrNotFound      = errors.New("not found")
 	ErrPanic         = errors.New("panic")
+	ErrRetryLater    = errors.New("retry later")
 )

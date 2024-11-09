@@ -99,7 +99,14 @@ func (c *Client) Request(
 
 	defer res.Body.Close()
 
-	if res.StatusCode != http.StatusOK {
+	switch res.StatusCode {
+	case http.StatusOK:
+		break
+
+	case http.StatusGatewayTimeout:
+		return errors.WithStack(ErrRetryLater)
+
+	default:
 		return errors.Errorf("status: %d", res.StatusCode)
 	}
 

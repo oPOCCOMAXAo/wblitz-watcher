@@ -2,6 +2,9 @@ package watcher
 
 import (
 	"context"
+	"errors"
+
+	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
 )
 
 func (s *Service) serveTasks(ctx context.Context, cancel context.CancelCauseFunc) {
@@ -31,7 +34,15 @@ func (s *Service) execTaskSingle(
 	task func(context.Context) error,
 ) {
 	err := task(ctx)
-	if err != nil {
+
+	switch {
+	case err == nil:
+		return
+
+	case errors.Is(err, models.ErrRetryLater):
+		return
+
+	default:
 		cancel(err)
 	}
 }
