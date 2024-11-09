@@ -1,11 +1,17 @@
-FROM alpine:3.18
+FROM golang:1.23.3-alpine AS builder
+RUN apk add --no-cache gcc musl-dev
+ENV CGO_ENABLED=1
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go \
+	build \ 
+	-trimpath \
+	-o /bin/app \
+	cmd/app/main.go
 
-WORKDIR /
-
-COPY /wbwatcher /wbwatcher
-
-RUN chmod +x /wbwatcher
-
-EXPOSE 8080
-
-ENTRYPOINT [ "/wbwatcher"  ]
+FROM alpine:3.20
+COPY --from=builder /bin/app /bin/app
+RUN mkdir -p /data
+ENTRYPOINT ["/bin/app"]
