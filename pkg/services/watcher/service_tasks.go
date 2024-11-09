@@ -2,26 +2,28 @@ package watcher
 
 import (
 	"context"
-	"errors"
 
-	"github.com/opoccomaxao/wblitz-watcher/pkg/models"
+	"github.com/opoccomaxao/wblitz-watcher/pkg/services/telemetry"
 )
 
-func (s *Service) serveTasks(ctx context.Context, cancel context.CancelCauseFunc) {
+func (s *Service) serveTasks(
+	ctx context.Context,
+	_ context.CancelCauseFunc,
+) {
 	done := ctx.Done()
 
-	s.execTaskSingle(ctx, cancel, s.TaskSendMessages)
-	s.execTaskSingle(ctx, cancel, s.TaskProcessEvents)
-	s.execTaskSingle(ctx, cancel, s.TaskWatchClan)
+	s.execTaskSingle(ctx, s.TaskSendMessages)
+	s.execTaskSingle(ctx, s.TaskProcessEvents)
+	s.execTaskSingle(ctx, s.TaskWatchClan)
 
 	for {
 		select {
 		case <-s.tickerWatchClan.C:
-			s.execTaskSingle(ctx, cancel, s.TaskWatchClan)
+			s.execTaskSingle(ctx, s.TaskWatchClan)
 		case <-s.chanProcessEvents:
-			s.execTaskSingle(ctx, cancel, s.TaskProcessEvents)
+			s.execTaskSingle(ctx, s.TaskProcessEvents)
 		case <-s.chanSendMessages:
-			s.execTaskSingle(ctx, cancel, s.TaskSendMessages)
+			s.execTaskSingle(ctx, s.TaskSendMessages)
 		case <-done:
 			return
 		}
@@ -30,21 +32,14 @@ func (s *Service) serveTasks(ctx context.Context, cancel context.CancelCauseFunc
 
 func (s *Service) execTaskSingle(
 	ctx context.Context,
-	cancel context.CancelCauseFunc,
 	task func(context.Context) error,
 ) {
 	err := task(ctx)
-
-	switch {
-	case err == nil:
-		return
-
-	case errors.Is(err, models.ErrRetryLater):
-		return
-
-	default:
-		cancel(err)
+	if err != nil {
+		telemetry.RecordErrorBackground(err)
 	}
+
+	return
 }
 
 func (s *Service) execInitialTasks(ctx context.Context) error {
